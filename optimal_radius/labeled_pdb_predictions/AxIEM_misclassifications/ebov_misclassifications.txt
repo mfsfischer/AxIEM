@@ -1,0 +1,2 @@
+Protein FN_TP FP_switchedFN FN_switchedFP
+1 0.35714285714285715 0.0 0.0

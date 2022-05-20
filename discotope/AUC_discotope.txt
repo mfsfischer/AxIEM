@@ -1,0 +1,6 @@
+DVII Discotope Discotope 0.6483568314249624
+EBOV Discotope Discotope 0.8360534739845085
+H3 Discotope Discotope 0.5047169811320755
+H7 Discotope Discotope 0.5573363614016268
+RSV Discotope Discotope 0.7191780071439529
+HIV Discotope Discotope 0.7041824322039258

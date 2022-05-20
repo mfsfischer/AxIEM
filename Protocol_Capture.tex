@@ -1,0 +1,452 @@
+% This file describes the protocol capture used for predicting epitopes
+
+\documentclass[10pt]{article}
+
+%\usepackage{minted}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{epstopdf}
+\usepackage{sectsty}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{makecell}
+\pagestyle{fancyplain}
+\usepackage{fancyref}
+\usepackage{hyperref}
+\usepackage{siunitx}
+\usepackage{physics}
+\usepackage{listings}
+\usepackage{romannum}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage[margin=1in, includefoot, nohead]{geometry}
+
+\pagestyle{plain}
+\makeatletter
+\AtBeginDocument{%
+  \renewcommand\@oddfoot{%
+    \hspace*{\dimexpr\Gm@rmargin-\Gm@lmargin}% right margin minus left margin
+    \hfil\thepage\hfil
+  }%
+}
+
+% Set the appearance of hyperlinks.
+\usepackage[svgnames]{xcolor}
+\usepackage{hyperref}
+\definecolor{Darkgray}{gray}{0.15}
+\hypersetup{
+  colorlinks = true,
+  linkcolor=Darkgray,
+  urlcolor=MidnightBlue,
+  citecolor=.
+}
+
+% Default fonts to use for this document.
+\usepackage{microtype}
+\usepackage{fontspec}
+\usepackage{unicode-math}
+\defaultfontfeatures{Ligatures=TeX, Scale=MatchLowercase}
+\setmainfont{Minion Pro}
+\setsansfont{Myriad Pro}
+\setmathfont{MinionMath-Bold.otf}[version=bold]
+\setmathfont{Minion Math}
+\SetProtrusion[name=min-eu2]{encoding={EU2},family=MinionPro}{{,}={,500},-={,500}}
+\setmonofont{Fira Code}
+\setmathfont[range={}]{Minion Math}
+
+
+
+
+\title{Protocol capture}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\section{Preparation of Input PDB files for Design}
+
+\subsection{Initial Curation of aligned PDB files}
+
+Both RECON multi-state design and the epitope prediction methods discussed later require that thesame (or aligned) residue must be present in all conformations of a virus to be considered for design or epitope prediction. Additionally, residues must be listed in the same sequence, \textit{i.e.} both the chain and residue order is critical in the alignment of congruous residues and subequent analysis of changes in a residue's physicochemical environment. The initial preparation of PDB was done in PyMOL to check whether or not chains needed to be reordered. Table 1 represents the PDB files originally downloaded from the \href{www.rcsb.org}{Protein Data Bank}, the original chain order, and the new chain order (allowing for all chains to be in the same order for all conformations of the same virus).
+
+If chain reordering was necessary, the following script was used to reorder the chain IDs. The notation '\texttt{$\backslash\backslash$}' indicates that the following line should be entered on the same line when entered in the terminal.
+\begin{lstlisting}
+  python2.7 reorder_pdb_chains.py <input.pdb> <output.pdb> \\
+  --new_chain_order=NEW_CHAIN_ORDER \\
+  --new_chain_id=NEW_CHAIN_ID --preserve
+\end{lstlisting}
+
+After reordering the chains, the sequence of each conformation's monomer (including either the protomer FASTA file or the two cleaved attachment and fusion domain chains concatenated together as one FASTA file) was aligned using Clustal Omega. All residues which aligned were considered for both design and epitope prediction.
+
+\subsection{Identification and threading of consensus sequence onto native models}\label{sec:msa}
+
+Given that some of the conformations were engineered to be conformationally stable, the native sequences of the experimentally determined models are not representative of the wild-type sequences of live virues. Therefore, to encourage selection of mutations more likely to occur within human populations, the consensus sequence of full-length protein isolated from human hosts was determined and threaded onto each native model backbone. 
+
+To begin, a multiple sequence alignment was generated using a locally-installed version of Clustal Omega (\url{http://www.clustal.org}) to align all full-length sequences available from the NCBI Virus, or other specialized NCBI-sponsered database (\Fref[plain]{tab:access_dates}). Sequences were were initially downloaded as a Protein FASTA file and then aligned using the following command.\\
+
+\begin{lstlisting}
+  clustalo -i <sequence.fa> -o <sequence.aln> -t Protein --infmt=fa
+\end{lstlisting}
+
+The multiple sequence alignment was file was used to determine the consensus sequence using \texttt{EMBOSS v.6.6.0.0} with the \texttt{cons} package (\url{ftp://emboss.open-bio.org/pub/EMBOSS/}). \\
+
+\begin{lstlisting}
+  cons -sequence <sequence.aln> -outseq <sequence.cons>
+\end{lstlisting}
+
+\begin{table}
+  \centering
+\begin{tabular}{
+  c
+  c
+  c
+  c
+  c
+  c
+  }
+  \toprule
+  Database & Date Accessed & {\makecell{Virus\\ (taxid)}} & {\makecell{Host\\ (taxid)}} & Collection Dates & {\makecell{\# Full-length\\Sequences}} \\
+  \midrule
+  NCBI Virus & 07/13/2020 & {\makecell{SARS-CoV-1\\ (694009)}} & {\makecell{Human\\(9605)}} & {\makecell{01/01/2000 - 01/01/2019}} & 9 \\
+  NCBI Virus & 07/13/2020 & {\makecell{SARS-CoV-2\\ (2697049)}} & {\makecell{Human\\(9605)}} & all & 9,339 \\
+  NCBI Virus & 07/13/2020 & {\makecell{MERS-CoV\\ (1335626)}} & {\makecell{Human\\(9605)}} & all & 519 \\
+  NCBI Virus & 09/10/2020 & {\makecell{DV II\\(11060)}} & {\makecell{Human\\(9605)}} & all & 2512 \\
+  NCBI Virus & 09/10/2020 & {\makecell{Human RSV A\\(208893)}} & {\makecell{Human\\(9605)}} & all & 767 \\
+  NCBI Virus & 09/10/2020 & {\makecell{HIV-1\\(11676)}} & {\makecell{Human\\(9605)}} & all & 80760 \\
+  NCBI Virus & 09/10/2020 & {\makecell{Zaire EBOV\\(186538)}} & {\makecell{Human\\(9605)}} & all & 1700 \\
+  {\makecell{Influenza Virus\\Resource}} & 09/10/2020 & {\makecell{Influenza A\\H3N*}} & Human & all & 28519 \\
+  {\makecell{Influenza Virus\\Resource}} & 09/10/2020 & {\makecell{Influenza A\\H7N*}} & Human & all & 108 \\
+  \bottomrule
+\end{tabular}
+\caption{Accession Dates of Virus Sequences. Default parameters were used unless noted above to query for sequences of each viral glycoprotein.}\label{tab:access_dates}
+\end{table}
+
+In brief, the consensus sequence for each viral protein was threaded over the protein backbone of each conformation, or in other words, the pre-existing side chain was removed and replaced with the side chain representing the consensus sequence. First, the consensus sequence was aligned to each of the native PDB sequences. For each native template, the FASTA files was obtained by concatenating the FASTA file of each chain in order, which was determined using the following command:
+
+\begin{lstlisting}
+  python get_fasta_from_pdb.py <pdb> <chain> <pdb_chain.fasta>
+\end{lstlisting}
+
+The consensus and full-length native sequences were aligned using Clustal Omega (\texttt{<virus>\_cons.fasta} and \texttt{<virus>\_cons.aln}). Afterwards, a \texttt{grishin} file was created using the consensus sequence as the target sequence for all native templates, and the Rosetta Partial Thread application was used to assign coordinates to the consensus sequence.
+
+\begin{lstlisting}
+  /path/to/rosetta/main/source/bin/partial_thread.linuxgccrelease \\
+  -database /path/to/rosetta/main/database -in:file:fasta <sequence.cons> \\
+  -in:file:alignment cons_<pdb>.grishin -in:file:template_pdb <pdb>
+\end{lstlisting}
+
+\subsection{Minimization and model selection for design}\label{sec:relax}
+
+The threaded template models were subjected to constrained Rosetta FastRelax to generate 50 relaxed models.
+\begin{lstlisting}
+  /path/to/rosetta/main/source/bin/rosetta_scripts.default.linuxgccrelease \\
+  @relax.flags -s <threaded pdb> -scorefile <pdb>_relaxed.fasc
+  
+  ---------------relax.flags---------------
+   -database /path/to/rosetta/main/database/
+   -linmem_ig 10
+   -in:file:fullatom
+   -in:detect_disulf false
+   -relax:fast
+   -relax:constrain_relax_to_start_coords
+   -out:file:fullatom
+   -out:suffix _relax
+   -use_input_sc
+   -nstruct 50
+  -----------------------------------------
+\end{lstlisting}
+
+The relaxed model with the combined lowest total energy score and lowest root mean square deviation (RMSD) were chosen as the native models for design, and was chosen by first obtaining the total score and $C_{alpha}$ RMSD values of each relaxed model in relation to the native (here, the threaded) model, and then sorting by score then RMSD as follows:
+\begin{lstlisting}
+  python2.7 score_vs_rmsd.py -n <native.pdb> -c ca -t total \\
+  -o <pdb>_sc_rmsd.tab <pdb>_threaded_relax_*pdb
+  
+  cat <pdb>_sc_rmsd.tab| tail -50 | sort -k2 -k3 | head -1
+\end{lstlisting}
+
+\section{Design and analysis of viral fusion protein sequence tolerance}
+\subsection{RECON multistate design of viral fusion protein ensembles}\label{sec:design}
+
+For each viral surface/fusion (glyco)protein, the native ensemble refers to the set of experimentally-determined conformations of available in the \href{www.rcsb.org}{Protein Data Bank} that were subjected to threading of the consensus sequence onto the native backbone and minimization via Rosetta FastRelax as discussed in the previous sections. REstrained CONvergence MultiState Design (RECON MSD) was performed on the full-length protein, excluding any residues not present in all states (\textit{i.e.} conformations of the same protein) as indicated in \Fref[plain]{tab:designed-positions}. For Class I fusion proteins, design also excluded any residues that were not determined in all three protomers, but design was performed on the trimeric protein given that Class I fusion proteins maintain trimeric symmetry for attachment and fusion. For Class II fusion proteins, the protomer/cleaved attachment and fusion domains were subjected to design as a monomeric/heteromeric protein, since fusion requires a change from the fusion protein's dimeric to trimeric form. Class III fusion proteins were not considered for design.
+
+The following scripts represent the files (listed between dashed lines) required for a design run:
+
+\begin{table}
+  \centering
+  \begin{tabular}{
+    c
+    c
+    c
+    }
+    \toprule
+    Viral protein & Chain & Residues considered for design \\
+    \toprule
+    DVII E & A & 1-394\\
+    \midrule
+    \multirow{3}{*}{Zaire EBOV GP} & A & {\makecell{32-188, 516-521, 525-597}}\\
+                  & B & {\makecell{708-864, 1192-1197, 1201-1273}}\\
+                  & C & {\makecell{1384-1540, 1868-1873, 1877-1949}}\\
+    \midrule
+    \multirow{3}{*}{influenza A H3 HA2} & A & 387-499\\
+                  & B & 958-1070\\
+                  & C & 1529-1641\\
+    \midrule
+    \multirow{3}{*}{influenza A H7 HA} & A & {\makecell{19-229, 238-334, 354-519}}\\
+                  & B & {\makecell{587-797, 806-902, 922-1087}}\\
+                  & C & {\makecell{1155-1365, 1374-1470, 1490-1655}}\\
+    \midrule
+    \multirow{5}{*}{MERS-CoV S} & A & {\makecell{18-377, 381-589, 596-698, 710-741\\756-877, 886-915, 924-1205}}\\
+                  & B & {\makecell{1371-1730, 1734-1942, 1949-2051, 2063-2093\\2109-2230, 2239-2268, 2277-2558}}\\
+    & C & {\makecell{2724-3083, 3087-3295, 3302-3404, 3416-3446\\3462-3583, 3592-3621, 3630-3911}}\\
+    \midrule
+    \multirow{3}{*}{RSV F} & A & {\makecell{27-97, 155-322, 333-505}}\\
+                  & B & {\makecell{601-671, 729-896, 907-1079}}\\
+                  & C & {\makecell{1175-1245, 1303-1470, 1481-1653}}\\
+    \midrule
+    \multirow{5}{*}{SARS-CoV-1 S} & A & {\makecell{30-137, 149-167, 179-236, 250-482\\491-502, 509-662, 673-808, 835-1104}}\\
+                  & B & {\makecell{1285-1392, 1404-1422, 1434-1491, 1505-1737\\1746-1757, 1764-1917, 1928-2063, 2090-2359}} \\
+                  & C & {\makecell{2540-2647, 2659-2677, 2689-2746, 2760-2992\\3001-3012, 3019-3172, 3183-3318, 3345-3614}}\\
+    \midrule
+    \multirow{7}{*}{SARS-CoV-2 S} & A & {\makecell{27-66, 82-95, 99-113, 116-140, 167-172, 187-196,\\200-209, 217-242, 264-328, 335-441, 449-454, 491-498,\\ 503-515, 522-620, 641-672, 690-810, 814-827, 856-1146}}\\
+                  & B & {\makecell{1300-1339, 1355-1368, 1372-1386, 1389-1413, 1440-1445, 1460-1469,\\ 1473-1482, 1490-1515, 1537-1601, 1608-1714, 1722-1727, 1764-1771,\\ 1776-1788, 1795-1893, 1914-1945, 1963-2083, 2087-2100, 2129-2419}}\\
+                  & C & {\makecell{2573-2612, 2628-2641, 2645-2659, 2662-2686, 2713-2718, 2733-2742,\\ 2746-2755, 2763-2788, 2810-2874, 2881-2987, 2988, 2995-3000, 3037-3044,\\ 3049-3061, 3068-3166, 3187-3218, 3236-3356, 3360-3373, 3402-3692}}\\
+    \bottomrule
+  \end{tabular}
+  \caption{Residue positions considered for design. All PDB models within an ensemble are numbered identically, and all chain identifiers from the initial model are eliminated. Chain identification denote individual protomers of Class I fusion proteins. Residue numbering is based off of the threaded model (\textit{i.e.} the $\texttt{<pdb>\_threaded.pdb}$ model), or rather a residue's position in the full-length consensus sequence. For Class I fusion proteins, only residues that are present in all three protomers were considered for design. Residues not present within all protomers were kept in the native model were allowed to repack (re-position) their side chains during design.}\label{tab:designed-positions}
+\end{table}
+
+\begin{lstlisting}
+  mkdir designs/             # Create directory for output models
+
+  /path/to/rosetta/main/source/bin/recon.default.linuxgccrelease \\
+  @<virus>.flags -out:suffix _msd_ -scorefile <virus>-msd.fasc -l relax.list 
+
+  ---------------------models.list---------------------
+  <List of pdb file /path/to/name>
+  -----------------------------------------------------
+
+
+  
+  ---------------------<virus>.flags---------------------
+  -in:file:fullatom
+  -out:file:fullatom
+  -database /path/to/rosetta/main/database/
+  -in:detect_disulf false
+  -out:pdb_gz
+  -use_input_sc
+  -nstruct 1
+  -parser:protocol <virus>.xml
+  -out:path:pdb designs/
+  -mute protocols.simple_moves.GenericMonteCarloMover
+  -linmem_ig 10
+  -------------------------------------------------------
+
+  # To make resfile, the following line generates a formated list
+  # containing the residues' (that will be designed to all 20 aa)
+  # number, chain id, and design specification (ALLAA)
+  # Lines for residues not considered for design were manually eliminated.
+  # Residues not considered for design were allowed to repack
+  
+  echo <#> | awk 'BEGIN{print "NATAA\nstart"}{for(i=1;i<=\$1;i++)\\
+    {print i, "A ALLAA"}}
+  
+  --------------------<virus>.resfile--------------------
+  NATAA
+  start
+  <Designed res #> <chain> ALLAA
+  ...
+  -------------------------------------------------------
+
+
+  
+  -------------------------------<virus>.xml-------------------------------
+  <ROSETTASCRIPTS>
+      <SCOREFXNS>
+          <Scorefunction name="ref2015_cst" weights="ref2015_cst.wts" >
+              <Reweight scoretype="res_type_constraint" weight="1.0" />
+          </Scorefunction>
+          <Scorefunction name="ref2015" weights="ref2015.wts" >
+          </Scorefunction>
+      </SCOREFXNS>
+      <TASKOPERATIONS>
+          <InitializeFromCommandline name=ifcl />
+      </TASKOPERATIONS>
+      <MOVERS>
+          <PackRotamersMover name="design" \\
+          scorefxn="ref2015_cst" task_operations="ifcl />
+          <MSDMover name="msd1" design_mover="design" constraint_weight="0.5" \\
+          resfiles="<virus>.resfile" />
+          <MSDMover name="msd2" design_mover="design" constraint_weight="1.0" \\
+          resfiles="<virus>.resfile" />
+          <MSDMover name="msd3" design_mover="design" constraint_weight="1.5" \\
+          resfiles="<virus>.resfile" />
+          <MSDMover name="msd4" design_mover="design" constraint_weight="2.0" \\
+          resfiles="<virus>.resfile" />
+          <FindConsensusSequence name="finish" scorefxn="ref2015" \\
+          resfiles="<virus>.resfile" task_operations="ifcl" \\
+          repack_one_res=1 />
+      </MOVERS>
+      <FILTERS>
+      </FILTERS>
+      <APPLY_TO_POSE>
+      </APPLY_TO_POSE>
+      <PROTOCOLS>
+          <Add mover="msd1" />
+          <Add mover="msd2" />
+          <Add mover="msd3" />
+          <Add mover="msd4" />
+          <Add mover="finish" />
+      </PROTOCOLS>
+  </ROSETTASCRIPTS>
+  -------------------------------------------------------------------------
+\end{lstlisting}
+
+The default RECON multistate design protocol was run using Rosetta version 3.12 and the \texttt{ref2015} scoring function. A total of 250 model ensembles were generated for each viral protein. The lowest scoring 25 ensembles from each design run were selected for analysis, where $score_{ensemble}=\frac{1}{n}\sum score_{state}$, or the average total energy score of all output states designed during a single RECON design run. 
+
+\subsection{Generation of sequence profiles from designed ensembles}\label{sec:design-profiles}
+
+An script implementing the WebLogo tool that aligns the sequence designated in the \texttt{resfile} to a native PDB and outputs a \texttt{tab} file summarizing the fraction of each amino acid type that populated each designed position. This \texttt{tab} file includes all residue positions present in all PDB files used to calculate the fractions (\texttt{*\_msd<chain>*pdb}), so any positions not designated in the corresponding \texttt{resfile} were manually removed.
+
+\begin{lstlisting}
+   # In directory where full atom score (*.fasc) files are located
+  # Identify ensembles with lowest average total score
+  
+  cat <virus>-<chainrun>.fasc | tail -n+3 | awk '{$1="";print $0}' > \\
+  <virus>-<chainrun>_copy.fasc
+  sed -i 's/<pdb_prefix>//g' *copy.fasc      # Do this for all unique prefixes
+  sed -i 's/_0001//g' *copy.fasc
+  cp *copy.fasc designs/
+  cd designs/
+
+  # In designs/ directory:
+  python /path/to/lowest_scoring_RECON_ensembles.py -o SARS_low_ensembles.txt \\
+  -n XXX -t YYY -c ZZZ -f <virus>-msd<chainrun>_copy.fasc -p prefix#.list
+  ### Where:
+  ###     XXX = No. of states
+  ###     YYY = No. of jobs per run
+  ###     ZZZ = No. of lowest-scoring ensembles to pick out of each run
+  ### prefix# = Which <pdb>_relax#.pdb was used as the native
+  
+  ----------prefix#.list----------
+  <pdb>_<msd_labels>
+  ...where <pdb> is each PDB used
+  in ensemble
+  -------------------------------
+
+  deep_analysis --native_pdb ../../<pdb>_relax1.pdb --prefix <virus><chain> \\
+  --res ../../<chain>.resfile *_msd<chain>*.pdb
+\end{lstlisting}
+
+\subsection{Generation of sequence profiles obtained from public databases}
+
+Using the multiple sequence alignment generated in \Fref[plain]{sec:msa}, the frequencies of all twenty amino acids present at each aligned sequence position within all publically available sequences were calculated using WebLogo 3, which was installed locally using Python 3.7.
+
+\begin{lstlisting} 
+  weblogo --sequence-type 'protein' --format logodata --composition 'none' \\
+  <sequence.aln> <virus>.logodata
+\end{lstlisting}
+
+\subsection{Comparision of designed to experimentally validated sequence tolerance}
+
+First, the percent conservation of the consensus sequence was measured within the designed sequences and the experimentally determined sequences (that were obtained as noted in \Fref[plain]{tab:access_dates} to compare the level of sequence conservation between predicted and observed viral protein sequences. 
+
+
+\section{Selection of epitope residues}
+
+A broadly-neutralizing epitope for this project is defined as any residue that makes a binding interaction with an antibody that has been determined (\textit{i.e.} published in a peer-reviewed journal) to neutralize more than one viral clade or serotype. This definition was aided by the availability of experimental data curated by the \href{iedb.org}{Immune Epitope DataBase (IEDB) and analysis resource} or the \href{https://www.hiv.lanl.gov/components/sequence/HIV/featuredb/search/env_ab_search_pub.comp}{HIV sequence database} (\Fref[plain]{tab:epitopes}). Epitope residue searches in the IEDB were obtained using the search filters 'Positive Assays only', 'Epitope Structure: Discontinuous', 'No T cell assays', 'No MHC ligand assays', and 'Host: Homo sapiens (human)'.
+
+There are also two other considerations for the classification of conformation-dependent epitope residues: (\romannum{1}) for epitopes such as RSV Site \O, the availability of an epitope is highly conformation dependent. Therefore, if a residue is known to interact with one or a limited number of subpopulations of conformations, \textit{e.g.} the prefusion or primed conformation of RSV Site \O, that residue is only classified as a residue for any structurally-determined conformations that have been cited to interact with one or more broadly neutralizing antibodies. (\romannum{2}) The other consideration is the definition of a \textit{discontinuous epitope}. The reason why the 'Epitope Structure: Discontinuous' and use of only B cell assays as the filter options to initially select ``epitope'' residues was to narrow the likelihood of false positive identification of residues known to form a binding interaction with a broadly neutralizing antibody. The use of linear peptide assays to identify epitopes cannot distinguish individual residues which do and do not form binding interactions with a broadly neutralizing antibody, so that the ``resolution'' of an epitope is limited to a general segment/area of a fusion protein.
+
+One last concern regarding the binary classification of whether or not a residue is an epitope is the distinction between a site of vulnerability versus a singly-determined, broadly-neutralizing epitope. For the initial classification, we classify any residue as an epitope if that residue has been indicated to interact with a broadly-neutralizing antibody. However, in cases such as influenza hemagglutinin or HIV-1 Env, epitope mapping efforts have been extensive and have allowed for the discovery of sites of vulnerability, or rather, surface-accessible regions that are commonly targeted by neutralizing antibodies. Although the epitopes that map to a site of vulnerability are similar, each site-specific antibody forms a unique ``footprint'' \textemdash meaning that among all the residues that have been targeted by site-specific neutralizing antibodies, only a subset of the residues forming a common site of vulnerability are always targeted. Whether or not these residues must form a binding interaction with an antibody to give rise to the site of vulnerability is not always known. Therefore, we created a second classification set so that only residues which have been identified to form more than one antibody-antigen interaction for sites of vulnerability that have been determined to be targeted by more than one neutralizing antibody.
+
+\begin{longtable}{
+    c
+    c
+    c
+    c
+    }
+    \toprule
+    Viral Protein & Epitope ID & Epitope Residues & {\makecell{Excluded\\conformations}}\\
+    \toprule
+    \multirow{18}{*}{DVII E} & 110470 & \textbf{W101}, L107, F108 & \\
+                  & 110495 & \textbf{E311} & 1OK8\\
+                  & 110501 & T69 & \\
+                  & 167190 & \textbf{L56} & \\
+                  & 167191 & {\makecell{A54, T55, \textbf{L56}, R57, V129, Q131, P132,\\E133, N134, P166, K246, K247}} & 1OK8\\
+                  & 423782 & \textbf{N8}, \textbf{R9}, \textbf{E13} & 1OK8\\
+                  & 423783 & \textbf{N8}, \textbf{R9}, V12, \textbf{E13} & 1OK8\\
+                  & 504074 & N103, G104, G111 & \\
+                  & 540687 & \textbf{K305}, \textbf{K307}, \textbf{K310} & 1OK8\\
+                  & 540688 & \textbf{K305}, \textbf{K310}, \textbf{E311} & 1OK8\\
+                  & 540689 & T303, G304, \textbf{K307} & 1OK8\\
+                  & 738402 & G100, \textbf{W101}, \textbf{K310}, R323 & 1OK8\\
+                  & 753469 & {\makecell{\textbf{K307}, \textbf{V309}, \textbf{K310}, \textbf{Q316}, G318, \textbf{D362}, S363, \\\textbf{P364}}} & 1OK8 \\
+                  & 753470 & \textbf{K307}, \textbf{V309}, \textbf{Q316}, \textbf{D362}, \textbf{P364} & 1OK8\\
+                  & 753471 & {\makecell{K160, E161, I162, K163, I170, I171, A173,\\E174, T176, G177, T180}} & 1OK8\\
+    \midrule
+    \multirow{19}{*}{Zaire EBOV GP} & 442029 & \textbf{N550}, \textbf{D552}, \textbf{G553}, \textbf{C556} & \\
+                  & 534853 & \textbf{A526}, \textbf{I527} & \\
+                  & 534854 & {\makecell{\textbf{K114}, \textbf{K115}, \textbf{P116}, \textbf{D117}, \textbf{G118}, E120, S142,\\G143, \textbf{T144}, G145}} & \\
+                  & 534855 & {\makecell{H549, \textbf{N550}, Q551, \textbf{D552}, \textbf{G553}, L554, I555, \\\textbf{C556}}} & \\
+                  & 539006 & \textbf{N550}, \textbf{D552} & \\
+                  & 606556 & \textbf{G528} & \\
+                  & 857622 & \textbf{N550}, \textbf{D552}, \textbf{G553}, \textbf{C556} & \\
+                  & 933255 & \textbf{A148}, \textbf{G149}, \textbf{I532} & \\
+                  & 933256 & \textbf{G118}, \textbf{T144} & \\
+                  & 933257 & \textbf{G149}, \textbf{I532} & \\
+                  & 933258 & \textbf{A525}, \textbf{I527}, \textbf{I532} & \\
+                  & 933259 & I185, \textbf{I527}, \textbf{I532} & \\
+                  & 933260 & \textbf{K115}, \textbf{D117}, \textbf{G118}, \textbf{T144} & \\
+                  & 933263 & R64, \textbf{I527}, \textbf{I532} & \\
+                  & 933264 & S46, D49, \textbf{G118}, \textbf{T144} & \\
+                  & 985426 & {\makecell{\textbf{K114}, \textbf{P116}, \textbf{D117}, \textbf{G118}, S119, \textbf{T144}, P146,\\ \textbf{A148}}} & \\
+                  & 985702 & \textbf{P116}, \textbf{D117} & \\
+                  & 1063108 & \textbf{A525}, \textbf{A526}, \textbf{I527}, \textbf{G528}, L529, A530, W531 & \\
+                  \midrule
+    \multirow{7}{*}{influenza H3 HA2} & 189321 & {\makecell{\textbf{T387},\textbf{Q388}, \textbf{I391}, \textbf{D392}, \textbf{I394}, \textbf{N395}, \textbf{G396},\\\textbf{L398}, \textbf{N399}, \textbf{I402}, \textbf{K404}, T405, N406, R499}} & 1HTM \\
+                  & 580002 & \textbf{Q388}, \textbf{I391}, \textbf{I394} & 1HTM\\
+                  & 580003 & {\makecell{\textbf{T387}, \textbf{Q388}, \textbf{I391}, \textbf{D392}, \textbf{I394}, \textbf{N395}, \textbf{G396}, \\\textbf{L398}, \textbf{N399}, \textbf{I402}, E403, \textbf{K404}}} & 1HTM \\
+                  & 742477 & \textbf{I391} & 1HTM\\
+    \midrule
+    \multirow{10}{*}{influenza H7} & H7.5 & {\makecell{\textbf{S136}, \textbf{G137}, \textbf{N164}, \textbf{N167}, \textbf{A169}, \textbf{F170}, \textbf{P171}, \\Q172, M173}} & 3M5G \\
+                  & 580003\textsuperscript{*} & {\makecell{\textbf{D366}, \textbf{G367}, \textbf{W368}, \textbf{D384}, \textbf{T388}, \textbf{Q389}, \textbf{I392}, \\\textbf{G397}, \textbf{L399}, \textbf{N400}, \textbf{I403}, \textbf{K405}}} & 6MLM\\
+                  & 886618 & {\makecell{\textbf{A143}, \textbf{T144}, \textbf{S145}, \textbf{R148}, \textbf{S152}, \textbf{W160}, \textbf{L162},\\\textbf{T165}, \textbf{D166}, \textbf{A168}, \textbf{A198}, \textbf{E199}, \textbf{K202}, \textbf{L203}}} & 6MLM\\
+                  & 886619 & {\makecell{I138, \textbf{R139}, \textbf{N141}, \textbf{G142}, \textbf{A143}, \textbf{T144}, \textbf{S145}, \\\textbf{S152}, \textbf{W160}, N164, \textbf{T165}, \textbf{D166}, \textbf{N167}, \textbf{A168}, \\\textbf{S196}, T197, \textbf{A198}, \textbf{E199}, T201, \textbf{K202}}} & 6MLM\\
+                  & 886620 & {\makecell{\textbf{R139}, \textbf{N141}, \textbf{G142}, \textbf{A143}, \textbf{T144}, \textbf{S145}, \textbf{R148},\\ S150, \textbf{G151}, \textbf{S152}, \textbf{W160}, \textbf{L162}, \textbf{D166}, \textbf{N167},\\ V195, \textbf{S196}, \textbf{A198}, \textbf{K202}, \textbf{L203}}} & 6MLM\\
+                  & 952484 & \textbf{G151} & 6MLM\\
+    \midrule
+    \multirow{32}{*}{MERS-CoV S} & 238082 & D455, \textbf{E513}, \textbf{R542} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 418776 & \textbf{L506}, T512 & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 418777 & \textbf{L506}, \textbf{Y540} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 418778 & \textbf{P547} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 418779 & \textbf{R542} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 418780 & \textbf{R542} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 418781 & \textbf{Y540} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 434564 & T489, \textbf{K493}, \textbf{E536}, E565 & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 434728 & {\makecell{V527, S528, \textbf{I529}, V530, \textbf{P531}, \textbf{S532}, \textbf{W535},\\\textbf{E536}, \textbf{D539}, \textbf{Y540}, \textbf{Y541}, \textbf{R542}}} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 461728 & {\makecell{\textbf{N501}, \textbf{K502}, \textbf{S504}, \textbf{F506}, \textbf{D510}, \textbf{E513},\\\textbf{P531}, \textbf{W535},\\\textbf{E536}, \textbf{D537}, \textbf{G538}, \textbf{D539}, \textbf{Y540}, \textbf{Y541}, \textbf{R542}, \\\textbf{W553}, \textbf{V555}, \textbf{S557}, \textbf{G558}, \textbf{S559}}} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 766969 & {\makecell{\textbf{N501}, \textbf{K502}, \textbf{S504}, \textbf{F506}, \textbf{D510}, \textbf{R511}, T512, \\\textbf{E513}, \textbf{W535}, \textbf{E536}, \textbf{D537}, \textbf{G538}, \textbf{D539}, \textbf{Y540},\\ \textbf{Y541}, \textbf{R542}, \textbf{W553}, \textbf{V555}, A556, \textbf{S557}}} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 767098 & {\makecell{\textbf{N501}, \textbf{K502}, \textbf{S504}, \textbf{F506}, \textbf{D510}, \textbf{E513}, \textbf{P531}, \\\textbf{W535}, \textbf{E536}, \textbf{D537}, \textbf{G538}, \textbf{D539}, \textbf{Y540}, \textbf{Y541},\\ \textbf{R542}}} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 832133 & {\makecell{\textbf{D510}, \textbf{I529}, \textbf{P531}, \textbf{W535}, \textbf{E536}, \textbf{D539}, \textbf{Y540},\\ \textbf{Y541}, \textbf{R542}, K543, Q544, \textbf{W553}}} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & 910130 & {\makecell{\textbf{K493}, L495, K496, \textbf{I529}, \textbf{P531}, \textbf{S532}, T533,\\\textbf{W535}, \textbf{E536}, \textbf{D539}, \textbf{Y540}, \textbf{Y541}, T560, A562}} & {\makecell{5W9K, 5W9H(A,B), \\5X5C(A,C), 5X5F(C)}}\\
+                  & G4 & Y1171, F1172, T1175, N1176, R1179, S1185 & 5X59, 5X5C, 5X5F\\
+     \midrule
+     \multirow{12}{*}{SARS-CoV-1 S} & 76972 & \textbf{D462} & 6NB7, 6NB6(B,C)\\
+       & 77442 & {\makecell{\textbf{R426}, S432, T433, \textbf{Y436}, \textbf{N437}, \textbf{K439}, Y440,\\\textbf{Y442}, P469, P470, A471, \textbf{L472}, N473, C474,\\\textbf{Y475}, W476, L478, N479, \textbf{D480}, Y481, \textbf{G482},\\Q492}} & 6NB7, 6NB6(B,C)\\
+       & 77444 & {\makecell{T359, T363, K365, K390, G391, D392, R395,\\\textbf{R426}, \textbf{Y436}, \textbf{G482}}} & 6NB7, 6NB6(B,C)\\
+       & 420672 & K344, F360, \textbf{Y442}, \textbf{L472}, \textbf{D480} & 6NB7, 6NB6(B,C)\\
+       & 420673 & \textbf{N479} & 6NB7, 6NB6(B,C)\\
+       & 910052 & \textbf{G446}, \textbf{P462}, D463, \textbf{Y475} & 6NB7, 6NB6(B,C)\\
+       & 1074318 & \textbf{D480} & 6NB7, 6NB6(B,C)\\
+       & 1074319 & \textbf{K439}, \textbf{G446}, S461, \textbf{D463} & 6NB7, 6NB6(B,C)\\
+     \bottomrule
+                  
+  \caption{Residues classified as epitopes. All residues listed were indicated in either the IEDB or HIV sequence database to be experimentally determined epitope contacts and were classified as an epitope residue in the initial training set. Residues listed in bold are residues determined to form more than one antibody-antigen interface, and were used for the second classification set indicating common residue-specific sites of vulnerability. Unless noted, all Epitope identification numbers (ID) are those provided by the IEDB. Residue numbering refers only to Chain A. For Class I fusion proteins, see PyMOL sessions labeled \texttt{epitopes.pse} in each fusion protein's respective directory for chain alignment and epitope numbering. All highlighted epitopes represent all residues classified as an epitope. The column 'Excluded Conformations' refers to any conformations (as PDB ID) for which those residues would not be classified as an epitope.}\label{tab:epitopes}
+\end{longtable}
+
+\end{document}

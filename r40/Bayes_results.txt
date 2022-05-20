@@ -1,0 +1,16 @@
+Bayes classifier mean prediction:  0.8747884940778342
+AUC score: 0.493993724787091
+Bayes classifier mean prediction:  0.8601694915254238
+AUC score: 0.8064701014892586
+Bayes classifier mean prediction:  0.9306784660766961
+AUC score: 0.656858340820605
+Bayes classifier mean prediction:  0.9535864978902954
+AUC score: 0.6925309511039599
+Bayes classifier mean prediction:  0.8826860841423948
+AUC score: 0.6623313537717588
+Bayes classifier mean prediction:  0.9815937149270483
+AUC score: 0.7240877993158495
+Bayes classifier mean prediction:  0.9755173688100517
+AUC score: 0.8950166259752966
+Bayes classifier mean prediction:  0.8017176997759522
+AUC score: 0.8131683084461762

@@ -1,0 +1,1 @@
+BayesROC_curvesLM_Envir.txt 0.6731868444011606 nan 0

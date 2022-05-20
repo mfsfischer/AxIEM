@@ -1,0 +1,237 @@
+---
+title: "Predictor Distributions including HIV"
+output: predictor_distributions_hiv
+---
+```{r}
+setwd("C://Users/mario/OneDrive/Desktop/backupaxel/ClassIandII/withHIV/results/")
+# Basic plotting libraries
+library(ggplot2)
+library(cowplot)
+# Statistical analyses libraries
+library(magrittr)
+library(dplyr)
+library(overlapping)
+```
+
+#################################
+Figure 1: 
+Distributions of Epitope & non-
+epitope residues by predictor
+
+```{r}
+virus_distributions <- read.csv("PredictionValueDistributions.txt", header = T, sep = " ",stringsAsFactors=FALSE)
+virus_distributions$Classifier <- as.factor(virus_distributions$Classifier)
+virus_distributions$Classifier <- factor(virus_distributions$Classifier, labels = c("Non-Epitope","Epitope"))
+```
+
+----comparison of mean REU
+```{r}
+mu <- virus_distributions %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(ResE))
+
+resE.ttest <- t.test(data=virus_distributions, ResE ~ Classifier)
+resE.p <- resE.ttest$p.value
+
+virus.distributions.ResE <- ggplot(virus_distributions,aes(x=ResE, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="Per-residue REU",y="Density") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + xlim(-10,10) + theme_cowplot() + theme(legend.position = "bottom", legend.justification = "center", legend.direction = "horizontal", legend.box = "vertical") + guides(color=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6))
+
+classifier_legend <- get_legend(virus.distributions.ResE)
+
+virus.distributions.ResE <- ggplot(virus_distributions,aes(x=ResE, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="Per-residue REU",y="Density") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + xlim(-10,10) + theme_cowplot() + theme(legend.position = "none") 
+virus.distributions.ResE
+```
+```{r}
+resE.p
+```
+----comparison of mean contact proximity RMSD
+```{r}
+mu <- virus_distributions %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(CP))
+CP.ttest <- t.test(data=virus_distributions, CP ~ Classifier)
+CP.p <- CP.ttest$p.value
+virus.distributions.CP <- ggplot(virus_distributions,aes(x=CP, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="CP RMSD",y="Density") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + xlim(0,2) + theme_cowplot() + theme(legend.position = "none") 
+virus.distributions.CP
+```
+```{r}
+CP.p
+```
+----comparison of mean neighbor vector
+```{r}
+mu <- virus_distributions %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NV))
+NV.ttest <- t.test(data=virus_distributions, NV ~ Classifier)
+NV.p <- NV.ttest$p.value
+virus.distributions.NV <- ggplot(virus_distributions,aes(x=NV, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NV",y="Density") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + xlim(0,1) + theme_cowplot() + theme(legend.position = "none")
+virus.distributions.NV
+```
+```{r}
+NV.p
+```
+```{r}
+Fig1 <- plot_grid(virus.distributions.NV, virus.distributions.ResE, virus.distributions.CP, nrow = 1, labels = "auto")
+Fig1 <- plot_grid(Fig1, classifier_legend, ncol = 1, rel_heights = c(1,0.2))
+Fig1
+```
+----------------overlap of predictors
+-----Neighbor Vector
+```{r}
+epitope.values <- subset(virus_distributions, Classifier == "Epitope")
+nonepitope.values <- subset(virus_distributions, Classifier == "Non-Epitope")
+NV.distributions <- list(X1=epitope.values$NV, X2=nonepitope.values$NV)
+NV.overlap <- overlap(NV.distributions, n = length(epitope.values$NV))
+NV.overlap$OV
+```
+-----per residue REU
+```{r}
+ResE.distributions <- list(X1=epitope.values$ResE, X2=nonepitope.values$ResE)
+ResE.overlap <- overlap(ResE.distributions, n = length(epitope.values$ResE))
+ResE.overlap$OV
+```
+
+-----Contact Proximity RMSD
+```{r}
+CP.distributions <- list(X1=epitope.values$CP, X2=nonepitope.values$CP)
+CP.overlap <- overlap(CP.distributions, n = length(epitope.values$CP))
+CP.overlap$OV
+```
+
+#################################
+Figure 2:
+Comparison on Neighbor Sum 
+distributions using radii/upper
+boundary of increasing size
+
+Must isolate each Radius size to calculate mean 
+and coefficient of overlap by group
+```{r}
+NS8 <- subset(virus_distributions, Radius=="8")
+NS16 <- subset(virus_distributions, Radius=="16")
+NS24 <- subset(virus_distributions, Radius=="24")
+NS32 <- subset(virus_distributions, Radius=="32")
+NS40 <- subset(virus_distributions, Radius=="40")
+NS48 <- subset(virus_distributions, Radius=="48")
+```
+
+-----NS radius 8
+```{r}
+mu <- NS8 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NS))
+NS8.ttest <- t.test(data=NS8, NS ~ Classifier)
+NS8.p <- NS8.ttest$p.value
+NS8plot <- ggplot(NS8,aes(x=NS, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NS",y="Density", title = "8 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + guides(title.position="center")
+NS8plot
+```
+```{r}
+NS8.p
+```
+```{r}
+epitope.values <- subset(NS8, Classifier == "1")
+nonepitope.values <- subset(NS8, Classifier == "0")
+NS8.distributions <- list(X1=epitope.values$NS, X2=nonepitope.values$NS)
+NS8.overlap <- overlap(NS8.distributions, n = length(epitope.values$NS))
+NS8.overlap$OV
+```
+
+-----NS radius 16
+```{r}
+mu <- NS16 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NS))
+NS16.ttest <- t.test(data=NS16, NS ~ Classifier)
+NS16.p <- NS16.ttest$p.value
+NS16plot <- ggplot(NS16,aes(x=NS, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NS",y="Density", title = "16 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
+NS16plot
+```
+```{r}
+NS16.p
+```
+```{r}
+epitope.values <- subset(NS16, Classifier == "1")
+nonepitope.values <- subset(NS16, Classifier == "0")
+NS16.distributions <- list(X1=epitope.values$NS, X2=nonepitope.values$NS)
+NS16.overlap <- overlap(NS16.distributions, n = length(epitope.values$NS))
+NS16.overlap$OV
+```
+-----NS radius 24
+```{r}
+mu <- NS24 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NS))
+NS24.ttest <- t.test(data=NS24, NS ~ Classifier)
+NS24.p <- NS24.ttest$p.value
+NS24plot <- ggplot(NS24,aes(x=NS, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NS",y="Density", title = "24 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
+NS24plot
+```
+```{r}
+NS24.p
+```
+```{r}
+epitope.values <- subset(NS24, Classifier == "1")
+nonepitope.values <- subset(NS24, Classifier == "0")
+NS24.distributions <- list(X1=epitope.values$NS, X2=nonepitope.values$NS)
+NS24.overlap <- overlap(NS24.distributions, n = length(epitope.values$NS))
+NS24.overlap$OV
+```
+-----NS radius32
+```{r}
+mu <- NS32 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NS))
+NS32.ttest <- t.test(data=NS32, NS ~ Classifier)
+NS32.p <- NS32.ttest$p.value
+NS32plot <- ggplot(NS32,aes(x=NS, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NS",y="Density", title = "32 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
+NS32plot
+```
+```{r}
+NS32.p
+```
+```{r}
+epitope.values <- subset(NS32, Classifier == "1")
+nonepitope.values <- subset(NS32, Classifier == "0")
+NS32.distributions <- list(X1=epitope.values$NS, X2=nonepitope.values$NS)
+NS32.overlap <- overlap(NS32.distributions, n = length(epitope.values$NS))
+NS32.overlap$OV
+```
+-----NS radius 40
+```{r}
+mu <- NS40 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NS))
+NS40.ttest <- t.test(data=NS40, NS ~ Classifier)
+NS40.p <- NS40.ttest$p.value
+NS40plot <- ggplot(NS40,aes(x=NS, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NS",y="Density", title = "40 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
+NS40plot
+```
+```{r}
+NS40.p
+```
+```{r}
+epitope.values <- subset(NS40, Classifier == "1")
+nonepitope.values <- subset(NS40, Classifier == "0")
+NS40.distributions <- list(X1=epitope.values$NS, X2=nonepitope.values$NS)
+NS40.overlap <- overlap(NS40.distributions, n = length(epitope.values$NS))
+NS40.overlap$OV
+```
+-----NS radius 48
+```{r}
+mu <- NS48 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NS))
+NS48.ttest <- t.test(data=NS48, NS ~ Classifier)
+NS48.p <- NS48.ttest$p.value
+NS48plot <- ggplot(NS48,aes(x=NS, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NS",y="Density", title = "48 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
+NS48plot
+```
+```{r}
+NS48.p
+```
+```{r}
+epitope.values <- subset(NS48, Classifier == "1")
+nonepitope.values <- subset(NS48, Classifier == "0")
+NS48.distributions <- list(X1=epitope.values$NS, X2=nonepitope.values$NS)
+NS48.overlap <- overlap(NS48.distributions, n = length(epitope.values$NS))
+NS48.overlap$OV
+```

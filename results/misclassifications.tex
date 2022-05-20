@@ -1,0 +1,55 @@
+\documentclass{article}
+
+% Define my settings
+\usepackage[english]{babel}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{amsmath}
+
+
+\title{}
+\author{Marion Fischer, Ph.D.}
+
+
+\begin{document}
+
+\begin{table}
+\makebox[\textwidth][c]{
+  \begin{tabular}{l c | c c | c c c}
+    \toprule
+    \multirow{2}{*}{Method} & \multirow{2}{*}{Virus} & \multicolumn{2}{c |}{{\makecell{\textnumero\ False\\predictions}}} & \multicolumn{3}{c}{{\makecell{'Mis'-classified false\\predictions (fraction)}}}\\
+    \cline{3-4}\cline{5-7}
+     &  & FP & FN & FP\textsubscript{FP \leftrightarrow FN} & FN\textsubscript{FP \leftrightarrow FN} & FN\textsubscript{FN \rightarrow TP}\\
+    \midrule
+    \multirow{7}{*}{AxIEM} & EBOV & 1169 & 56 & 0.00 & 0.00 & 0.357\\
+           & H3 & 629 & 0 & 0.00 & 0.00 & 0.00\\
+           & H7 & 1601 & 11 & $3.75\times 10^{-3}$ & 0.545 & 0.00\\
+           & HIV-1 & 4134 & 104 & $1.69\times 10^{-3}$ & $8.65\times 10^{-2}$ & 0.577\\
+           & RSV & 1809 & 13 & 0.00 & 0.00 & $7.69\times 10^{-2}$\\
+           & SARS-CoV & 543 & 124 & 0.171 & 0.653 & 0.00\\
+           & SARS-CoV-2 & 1002 & 211 & 0.00 & 0.00 & 0.588\\
+    \midrule
+    \multirow{7}{*}{Ellipro} & EBOV & 577 & 103 & $9.19\times 10^{-2}$ & 0.407 & $9.71\times 10^{-2}$\\
+           & H3 & 173 & 37 & $6.93\times 10^{2}$ & 0.324 & $5.41\times 10^{-2}$\\
+           & H7 & 716 & 113 & $3.63\times 10^{-2}$ & 0.230 & $6.19\times10^{-2}$\\
+           & HIV-1 & 1879 & 467 & $2.98\times 10^{-2}$ & 0.278 & 0.197\\
+           & RSV & 745 & 25 & $1.07\times 10^{-2}$ & 0.320 & $8.00\times 10^{-2}$\\
+           & SARS-CoV & 2427 & 300 & $5.68\times 10^{-2}$ & $8.00\times 10^{-2}$ & 0.397\\
+           & SARS-Cov-2 & 4729 & 178 & $2.80\times 10^{-2}$ & $3.90\times 10^{-2}$ & 0.376\\
+    \midrule
+    \multirow{7}{*}{Discotope} & EBOV & 1574 & 10 & $1.02\times 10^{-2}$ & 0.800 & 0.00\\
+           & H3 & 257 & 25 & $3.45\times 10^{-2}$ & 0.560 & $8.00\times 10^{-2}$\\
+           & H7 & 1257 & 84 & $4.77\times 10^{-2}$ & 0.714 & $3.57\times 10^{-2}$\\
+           & HIV-1 & 2217 & 475 & $6.22\times 10^{-2}$ & 0.236 & 0.371\\
+           & RSV & 1923 & 13 & $6.76\times 10^{-3}$ & 0.00 & 1.00\\
+           & SARS-CoV & - & - & - & - & - \\
+           & SARS-CoV & - & - & - & - & - \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table}
+
+
+\end{document}

@@ -1,0 +1,3 @@
+BayesROC_curvesCP.txt 0.5739306510844644 nan 0
+BayesROC_curvesNV.txt 0.6378966732268818 nan 0
+BayesROC_curvesREU.txt 0.6455260007709944 nan 0
