@@ -24,19 +24,19 @@ Fig2A
 ```{r}
 LR <- subset(leaveouts, Model=='LR' | Model=='randLR' | Model=='Discotope' | Model=='Ellipro')
 Fig2A <- ggplot(LR, aes(x=Boundary, y=AUC, color=Model, Boundary)) +
-  geom_point(size=1.5) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
+  geom_point(size=3) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
   scale_fill_manual(name="", values = c("#FE6100","#648FFF","black","gray70"))  +
   theme_cowplot() +
   facet_wrap(~ Virus, nrow = 3) +
   guides(fill=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6)) +
-  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8), plot.title = element_text(hjust = 0.5, size = 11), legend.position = "none", axis.title.x = element_blank()) +
+  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5), plot.title = element_text(hjust = 0.5, size = 11), legend.position = "none", axis.title.x = element_blank()) +
   geom_hline(yintercept = 0.5, linetype="dashed", color="gray50") +
   ylim(0.4, 1)
 Fig2A
 ```
 Fig2B
 ```{r}
-AUCavg <- read.csv("benchmark_all_avgAUCs.txt", header = T, sep = "\t")
+AUCavg <- read.csv("results/benchmark_all_avgAUCs.txt", header = T, sep = "\t")
 AUCavg$Model <- factor(AUCavg$Model, c("Discotope","Ellipro","LR","BC","RF"), labels = c("Discotope","Ellipro","Linear Regression","Bayes Classifier","Random Forest"))
 AUCavg$Boundary <- factor(AUCavg$Boundary, c("Discotope","Ellipro","0","8","16","24","32","40","48","56","64"), labels = c("","","0","8","16","24","32","40","48","56","64"))
 AUCavg$ExcludedNSFeatures <- factor(AUCavg$ExcludedNSFeatures, c("none","CP","REU","NV"), labels = c("None","NScp","NSreu","NSnv"))
@@ -49,7 +49,7 @@ Fig2B <- ggplot(fig2b, aes(x=Model, y=Mean, fill=Model)) +
   geom_errorbar(aes(ymin=Mean-StDev, ymax=Mean+StDev), width=.2, position = position_dodge(0.9)) +
   scale_fill_manual(name="Method", values = c("#FE6100","#648FFF","gray20","gray50", "gray80")) +
   theme_cowplot() +
-  theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank(), legend.position = "bottom", legend.justification = "center", legend.direction =    "horizontal", legend.box = "vertical") +
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5), axis.title.x = element_blank(), legend.position = "bottom", legend.justification = "center", legend.direction =    "horizontal", legend.box = "vertical") +
   guides(shape=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6), fill="none",color="none") +
   labs(x="Method", y="AUC") +
   coord_cartesian(ylim = c(0.5,1))
