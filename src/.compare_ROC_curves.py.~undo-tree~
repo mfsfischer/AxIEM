@@ -1,0 +1,8 @@
+(undo-tree-save-format-version . 1)
+"b67805e7c566168f67db118b5e0a7ca824e18642"
+[nil nil nil nil (25359 45646 572621 98000) 0 nil]
+([nil nil ((#("main()
+" 0 4 (fontified t) 4 5 (fontified t face (rainbow-delimiters-depth-1-face)) 5 6 (fontified t face (rainbow-delimiters-depth-1-face)) 6 7 (fontified t)) . 3677) (t 25330 30896 164713 643000)) nil (25359 45646 572619 728000) 0 nil])
+([nil nil ((3631 . 3632) (3591 . 3592) (1252 . 1255) (1123 . 1126) (1122 . 1123) (3708 . 3714) (#("n" 0 1 (fontified t)) . -3708) (undo-tree-id0 . -1) (#("a" 0 1 (fontified t)) . -3709) (undo-tree-id1 . -1) 3710 (3708 . 3710) (3703 . 3708) (3695 . 3703) (3677 . 3695)) nil (25359 45646 572618 198000) 0 nil])
+([nil current ((3723 . 3724) 2875) nil (25359 45646 572593 938000) 0 nil])
+nil

@@ -1,0 +1,206 @@
+CLUSTAL O(1.2.4) multiple sequence alignment
+
+
+5x58_predictions.pdb      YTQHTSSMRGVYYPDEIFRSDTLYLTQDLFLPFYSNVTGFHTINHTFGNPVIPFKDGIYF	60
+6vxx_predictions.pdb      -AYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFH--------PVLPFNDGVYF	51
+                           :  .*  *******::***..*: ********:**** **        **:**:**:**
+
+5x58_predictions.pdb      AATEKSNVVRGWVFGSTMNNKSQSVIIINNSTNVVIRACNFELCDNPFHTMIFDNAFNCT	120
+6vxx_predictions.pdb      AST---NIIRGWIFGTTLDSK--SLLIVNNATNVVIKVCEFQFCNDPFT-----------	95
+                          *:*   *::***:**:*::.*  *::*:**:*****:.*:*::*::**            
+
+5x58_predictions.pdb      FEYISDAFKHLREFVFKNKDGFLYVYKGYQPIDVVRDLPSGFNTLKPIFKLPLGINITNF	180
+6vxx_predictions.pdb      FEYVS---KNLREFVFK----------NYFKIYSKHTPPQGFSALEPLVDLPIGINITRF	142
+                          ***:*   *:*******          .*  *   :  *.**.:*:*:..**:*****.*
+
+5x58_predictions.pdb      RAILTAAYFVGYLKPTTFMLKYDENGTITDAVDCSQNPLAELKCSVKSFEIDKGIYQTSN	240
+6vxx_predictions.pdb      QTLL--AYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSN	200
+                          :::*  **:****:* **:***:***********: :**:* **::*** ::********
+
+5x58_predictions.pdb      FRVVPSGDVVRFPNITNLCPFGEVFNATKFPSVYAWERKKISNCVADYSVLYNSTFFSTF	300
+6vxx_predictions.pdb      FRVQPTESI------VRLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTF	254
+                          *** *: .:      ..***********:* *****:**:**************: ****
+
+5x58_predictions.pdb      KCYGVSATKLNDLCFSNVYADSFVVKGDDVRQIAPGQTGVIADYNYKLPDDFMGCVLAWN	360
+6vxx_predictions.pdb      KCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWN	314
+                          ****** ********:********::**:********** ************ ***:***
+
+5x58_predictions.pdb      TRNIDATSTGNHNYKYRYLRHGKLRPFERDISNVPFSPDGKPCTPPALNCYWPLNDYGYQ	420
+6vxx_predictions.pdb      SNNLYN-------YLYRPLQS-------------------------------YGFQVGYQ	336
+                          :.*:         * ** *:                                   : ***
+
+5x58_predictions.pdb      PYRVVVLSFETVCGPKLSTDLIKNQCVNFNFNGLTGTGVLTPSSKRFQPFQQFGRDVSDF	480
+6vxx_predictions.pdb      PYRVVVLSFATVCGPKKSTNLVKNKCVNFNFNGLTGTGVLTESNKKFLPFQQFGRDIADT	396
+                          ********* ****** **:*:**:**************** *.*:* ********::* 
+
+5x58_predictions.pdb      TDSVRDPKTSEILDISPCSFGGVSVITPGTNASSEVAVLYQDVNCTDVSTAIHADQLTPA	540
+6vxx_predictions.pdb      TDAVRDPQTLEILDITPCSFGGVSVITPGTNTSNQVAVLYQDVNCTEV------------	444
+                          **:****:* *****:***************:*.:***********:*            
+
+5x58_predictions.pdb      WRIYSTGNNVFQTQAGCLIGAEHVDTSYECDIPIGAGICASYHTSIVAYTMSLGADSSIA	600
+6vxx_predictions.pdb      --------NVFQTRAGCLIGAEHVNNSYECDIPIGAGICAQ---SIIAYTMSLGAENSVA	493
+                                  *****:**********:.**************.   **:********:.*:*
+
+5x58_predictions.pdb      YSNNTIAIPTNFSISITTEVMPVSMAKTSVDCNMYICGDSTECANLLLQYGSFCTQLNRA	660
+6vxx_predictions.pdb      YSNNSIAIPTNFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRA	553
+                          ****:*******:**:***::****:******.**********:****************
+
+5x58_predictions.pdb      LSGIAAEQDRNTREVFAQVKQMYKTPTLKYFGGFNFSQILPDPLKPTKRSFIEDLLFNKV	720
+6vxx_predictions.pdb      LTGIAVEQDKNTQEVFAQVKQIYKTPPIKDFGGFNFSQILPDP---SKRSFIEDLLFNKV	610
+                          *:***.***:**:********:**** :* *************   :*************
+
+5x58_predictions.pdb      QKFNGLTVLPPLLTDDMIAAYTAALVSGTATAGWTFGAGAALQIPFAMQMAYRFNGIGVT	780
+6vxx_predictions.pdb      T--NGLTVLPPLLTDEMIAQYTSALLAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVT	668
+                             ************:*** **:**::** *:****************************
+
+5x58_predictions.pdb      QNVLYENQKQIANQFNKAISQIQESLTTTSTALGKLQDVVNQNAQALNTLVKQLSSNFGA	840
+6vxx_predictions.pdb      QNVLYENQKLIANQFNSAIGKIQDSLSSTASALGKLQDVVNQNAQALNTLVKQLSSNFGA	728
+                          ********* ******.**.:**:**::*::*****************************
+
+5x58_predictions.pdb      ISSVLNDILSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSEC	900
+6vxx_predictions.pdb      ISSVLNDILSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSEC	788
+                          ************************************************************
+
+5x58_predictions.pdb      VLGQSKRVDFCGKGYHLMSFPQAAPHGVVFLHVTYVPSQERNFTTAPAICHEGKAYFPRE	960
+6vxx_predictions.pdb      VLGQSKRVDFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPRE	848
+                          **********************:**************:**:**********:***:****
+
+5x58_predictions.pdb      GVFVFNGTSWFITQRNFFSPQIITTDNTFVYTQ-----------------------HTSS	997
+6vxx_predictions.pdb      GVFVSNGTHWFVTQRNFYEPQIITTDNTFVSGNCDVVIGIVNNTVYDPLQPELDAYTNSF	908
+                          **** *** **:*****:.***********  :                        .* 
+
+5x58_predictions.pdb      MRGVYYPDEIFRSDTLYLTQDLFLPFYSNVTGFHTINHTFGNPVIPFKDGIYFAATEKSN	1057
+6vxx_predictions.pdb      TRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFH--------PVLPFNDGVYFAST---N	957
+                           *******::***..*: ********:**** **        **:**:**:***:*   *
+
+5x58_predictions.pdb      VVRGWVFGSTMNNKSQSVIIINNSTNVVIRACNFELCDNPFHTMIFDNAFNCTFEYISDA	1117
+6vxx_predictions.pdb      IIRGWIFGTTLDSK--SLLIVNNATNVVIKVCEFQFCNDPFT-----------FEYVS--	1002
+                          ::***:**:*::.*  *::*:**:*****:.*:*::*::**            ***:*  
+
+5x58_predictions.pdb      FKHLREFVFKNKDGFLYVYKGYQPIDVVRDLPSGFNTLKPIFKLPLGINITNFRAILTAA	1177
+6vxx_predictions.pdb      -KNLREFVFK----------NYFKIYSKHTPPQGFSALEPLVDLPIGINITRFQTLL--A	1049
+                           *:*******          .*  *   :  *.**.:*:*:..**:*****.*:::*  *
+
+5x58_predictions.pdb      YFVGYLKPTTFMLKYDENGTITDAVDCSQNPLAELKCSVKSFEIDKGIYQTSNFRVVPSG	1237
+6vxx_predictions.pdb      YYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTE	1109
+                          *:****:* **:***:***********: :**:* **::*** ::*********** *: 
+
+5x58_predictions.pdb      DVVRFPNITNLCPFGEVFNATKFPSVYAWERKKISNCVADYSVLYNSTFFSTFKCYGVSA	1297
+6vxx_predictions.pdb      SI------VRLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSP	1163
+                          .:      ..***********:* *****:**:**************: ********** 
+
+5x58_predictions.pdb      TKLNDLCFSNVYADSFVVKGDDVRQIAPGQTGVIADYNYKLPDDFMGCVLAWNTRNIDAT	1357
+6vxx_predictions.pdb      TKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLYN-	1222
+                          ********:********::**:********** ************ ***:***:.*:   
+
+5x58_predictions.pdb      STGNHNYKYRYLRHGKLRPFERDISNVPFSPDGKPCTPPALNCYWPLNDYGYQPYRVVVL	1417
+6vxx_predictions.pdb      ------YLYRPLQS-------------------------------YGFQVGYQPYRVVVL	1245
+                                * ** *:                                   : **********
+
+5x58_predictions.pdb      SFETVCGPKLSTDLIKNQCVNFNFNGLTGTGVLTPSSKRFQPFQQFGRDVSDFTDSVRDP	1477
+6vxx_predictions.pdb      SFATVCGPKKSTNLVKNKCVNFNFNGLTGTGVLTESNKKFLPFQQFGRDIADTTDAVRDP	1305
+                          ** ****** **:*:**:**************** *.*:* ********::* **:****
+
+5x58_predictions.pdb      KTSEILDISPCSFGGVSVITPGTNASSEVAVLYQDVNCTDVSTAIHADQLTPAWRIYSTG	1537
+6vxx_predictions.pdb      QTLEILDITPCSFGGVSVITPGTNTSNQVAVLYQDVNCTEV-------------------	1346
+                          :* *****:***************:*.:***********:*                   
+
+5x58_predictions.pdb      NNVFQTQAGCLIGAEHVDTSYECDIPIGAGICASYHTSIVAYTMSLGADSSIAYSNNTIA	1597
+6vxx_predictions.pdb      -NVFQTRAGCLIGAEHVNNSYECDIPIGAGICAQ---SIIAYTMSLGAENSVAYSNNSIA	1402
+                           *****:**********:.**************.   **:********:.*:*****:**
+
+5x58_predictions.pdb      IPTNFSISITTEVMPVSMAKTSVDCNMYICGDSTECANLLLQYGSFCTQLNRALSGIAAE	1657
+6vxx_predictions.pdb      IPTNFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRALTGIAVE	1462
+                          *****:**:***::****:******.**********:*****************:***.*
+
+5x58_predictions.pdb      QDRNTREVFAQVKQMYKTPTLKYFGGFNFSQILPDPLKPTKRSFIEDLLFNKVQKFNGLT	1717
+6vxx_predictions.pdb      QDKNTQEVFAQVKQIYKTPPIKDFGGFNFSQILPDP---SKRSFIEDLLFNKVT--NGLT	1517
+                          **:**:********:**** :* *************   :*************   ****
+
+5x58_predictions.pdb      VLPPLLTDDMIAAYTAALVSGTATAGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYEN	1777
+6vxx_predictions.pdb      VLPPLLTDEMIAQYTSALLAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYEN	1577
+                          ********:*** **:**::** *:***********************************
+
+5x58_predictions.pdb      QKQIANQFNKAISQIQESLTTTSTALGKLQDVVNQNAQALNTLVKQLSSNFGAISSVLND	1837
+6vxx_predictions.pdb      QKLIANQFNSAIGKIQDSLSSTASALGKLQDVVNQNAQALNTLVKQLSSNFGAISSVLND	1637
+                          ** ******.**.:**:**::*::************************************
+
+5x58_predictions.pdb      ILSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKR	1897
+6vxx_predictions.pdb      ILSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKR	1697
+                          ************************************************************
+
+5x58_predictions.pdb      VDFCGKGYHLMSFPQAAPHGVVFLHVTYVPSQERNFTTAPAICHEGKAYFPREGVFVFNG	1957
+6vxx_predictions.pdb      VDFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNG	1757
+                          ***************:**************:**:**********:***:******** **
+
+5x58_predictions.pdb      TSWFITQRNFFSPQIITTDNTFVYTQ-----------------------HTSSMRGVYYP	1994
+6vxx_predictions.pdb      THWFVTQRNFYEPQIITTDNTFVSGNCDVVIGIVNNTVYDPLQPELDAYTNSFTRGVYYP	1817
+                          * **:*****:.***********  :                        .*  ******
+
+5x58_predictions.pdb      DEIFRSDTLYLTQDLFLPFYSNVTGFHTINHTFGNPVIPFKDGIYFAATEKSNVVRGWVF	2054
+6vxx_predictions.pdb      DKVFRSSVLHSTQDLFLPFFSNVTWFH--------PVLPFNDGVYFAST---NIIRGWIF	1866
+                          *::***..*: ********:**** **        **:**:**:***:*   *::***:*
+
+5x58_predictions.pdb      GSTMNNKSQSVIIINNSTNVVIRACNFELCDNPFHTMIFDNAFNCTFEYISDAFKHLREF	2114
+6vxx_predictions.pdb      GTTLDSK--SLLIVNNATNVVIKVCEFQFCNDPFT-----------FEYVS---KNLREF	1910
+                          *:*::.*  *::*:**:*****:.*:*::*::**            ***:*   *:****
+
+5x58_predictions.pdb      VFKNKDGFLYVYKGYQPIDVVRDLPSGFNTLKPIFKLPLGINITNFRAILTAAYFVGYLK	2174
+6vxx_predictions.pdb      VFK----------NYFKIYSKHTPPQGFSALEPLVDLPIGINITRFQTLL--AYYVGYLQ	1958
+                          ***          .*  *   :  *.**.:*:*:..**:*****.*:::*  **:****:
+
+5x58_predictions.pdb      PTTFMLKYDENGTITDAVDCSQNPLAELKCSVKSFEIDKGIYQTSNFRVVPSGDVVRFPN	2234
+6vxx_predictions.pdb      PRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESI-----	2013
+                          * **:***:***********: :**:* **::*** ::*********** *: .:     
+
+5x58_predictions.pdb      ITNLCPFGEVFNATKFPSVYAWERKKISNCVADYSVLYNSTFFSTFKCYGVSATKLNDLC	2294
+6vxx_predictions.pdb      -VRLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLC	2072
+                           ..***********:* *****:**:**************: ********** *******
+
+5x58_predictions.pdb      FSNVYADSFVVKGDDVRQIAPGQTGVIADYNYKLPDDFMGCVLAWNTRNIDATSTGNHNY	2354
+6vxx_predictions.pdb      FTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLYN-------Y	2125
+                          *:********::**:********** ************ ***:***:.*:         *
+
+5x58_predictions.pdb      KYRYLRHGKLRPFERDISNVPFSPDGKPCTPPALNCYWPLNDYGYQPYRVVVLSFETVCG	2414
+6vxx_predictions.pdb      LYRPLQS-------------------------------YGFQVGYQPYRVVVLSFATVCG	2154
+                           ** *:                                   : ************ ****
+
+5x58_predictions.pdb      PKLSTDLIKNQCVNFNFNGLTGTGVLTPSSKRFQPFQQFGRDVSDFTDSVRDPKTSEILD	2474
+6vxx_predictions.pdb      PKKSTNLVKNKCVNFNFNGLTGTGVLTESNKKFLPFQQFGRDIADTTDAVRDPQTLEILD	2214
+                          ** **:*:**:**************** *.*:* ********::* **:****:* ****
+
+5x58_predictions.pdb      ISPCSFGGVSVITPGTNASSEVAVLYQDVNCTDVSTAIHADQLTPAWRIYSTGNNVFQTQ	2534
+6vxx_predictions.pdb      ITPCSFGGVSVITPGTNTSNQVAVLYQDVNCTEV--------------------NVFQTR	2254
+                          *:***************:*.:***********:*                    *****:
+
+5x58_predictions.pdb      AGCLIGAEHVDTSYECDIPIGAGICASYHTSIVAYTMSLGADSSIAYSNNTIAIPTNFSI	2594
+6vxx_predictions.pdb      AGCLIGAEHVNNSYECDIPIGAGICAQ---SIIAYTMSLGAENSVAYSNNSIAIPTNFTI	2311
+                          **********:.**************.   **:********:.*:*****:*******:*
+
+5x58_predictions.pdb      SITTEVMPVSMAKTSVDCNMYICGDSTECANLLLQYGSFCTQLNRALSGIAAEQDRNTRE	2654
+6vxx_predictions.pdb      SVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRALTGIAVEQDKNTQE	2371
+                          *:***::****:******.**********:*****************:***.***:**:*
+
+5x58_predictions.pdb      VFAQVKQMYKTPTLKYFGGFNFSQILPDPLKPTKRSFIEDLLFNKVQKFNGLTVLPPLLT	2714
+6vxx_predictions.pdb      VFAQVKQIYKTPPIKDFGGFNFSQILPDP---SKRSFIEDLLFNKVT--NGLTVLPPLLT	2426
+                          *******:**** :* *************   :*************   ***********
+
+5x58_predictions.pdb      DDMIAAYTAALVSGTATAGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKQIANQ	2774
+6vxx_predictions.pdb      DEMIAQYTSALLAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQ	2486
+                          *:*** **:**::** *:************************************* ****
+
+5x58_predictions.pdb      FNKAISQIQESLTTTSTALGKLQDVVNQNAQALNTLVKQLSSNFGAISSVLNDILSRLDK	2834
+6vxx_predictions.pdb      FNSAIGKIQDSLSSTASALGKLQDVVNQNAQALNTLVKQLSSNFGAISSVLNDILSRLDK	2546
+                          **.**.:**:**::*::*******************************************
+
+5x58_predictions.pdb      VEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKG	2894
+6vxx_predictions.pdb      VEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKG	2606
+                          ************************************************************
+
+5x58_predictions.pdb      YHLMSFPQAAPHGVVFLHVTYVPSQERNFTTAPAICHEGKAYFPREGVFVFNGTSWFITQ	2954
+6vxx_predictions.pdb      YHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQ	2666
+                          ********:**************:**:**********:***:******** *** **:**
+
+5x58_predictions.pdb      RNFFSPQIITTDNTFV------------------------	2970
+6vxx_predictions.pdb      RNFYEPQIITTDNTFVSGNCDVVIGIVNNTVYDPLQPELD	2706
+                          ***:.***********                        

@@ -1,0 +1,6 @@
+Protein				 center X		 center Y		 center Z		 Residue ID
+../7cak_predictions.pdb 	 219.42863636363637 	 145.83790909090908 	 262.5345454545455 	 A1675
+../6nb7_predictions.pdb 	 226.8566363636364 	 161.87272727272727 	 266.4529090909091 	 A1644
+
+
+RMSD : 22.18978662573999

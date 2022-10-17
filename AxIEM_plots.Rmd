@@ -1,0 +1,956 @@
+---
+title: "AxIEM R scripts notebook"
+author: Marion Fischer
+output: AxIEM_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+setwd("C://Users/mario/AxIEM/")
+# Basic plotting libraries
+library(ggplot2)
+library(cowplot)
+# Statistical analyses libraries
+library(magrittr)
+library(dplyr)
+library(overlapping)
+library(scales)
+```
+#################################
+Fig2A
+```{r}
+LR <- subset(leaveouts, Model=='LR' | Model=='randLR' | Model=='Discotope' | Model=='Ellipro')
+Fig2A <- ggplot(LR, aes(x=Boundary, y=AUC, color=Model, Boundary)) +
+  geom_point(size=1.5) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
+  scale_fill_manual(name="", values = c("#FE6100","#648FFF","black","gray70"))  +
+  theme_cowplot() +
+  facet_wrap(~ Virus, nrow = 3) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6)) +
+  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8), plot.title = element_text(hjust = 0.5, size = 11), legend.position = "none", axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0.5, linetype="dashed", color="gray50") +
+  ylim(0.4, 1)
+Fig2A
+```
+Fig2B
+```{r}
+AUCavg <- read.csv("benchmark_all_avgAUCs.txt", header = T, sep = "\t")
+AUCavg$Model <- factor(AUCavg$Model, c("Discotope","Ellipro","LR","BC","RF"), labels = c("Discotope","Ellipro","Linear Regression","Bayes Classifier","Random Forest"))
+AUCavg$Boundary <- factor(AUCavg$Boundary, c("Discotope","Ellipro","0","8","16","24","32","40","48","56","64"), labels = c("","","0","8","16","24","32","40","48","56","64"))
+AUCavg$ExcludedNSFeatures <- factor(AUCavg$ExcludedNSFeatures, c("none","CP","REU","NV"), labels = c("None","NScp","NSreu","NSnv"))
+fig2b <- subset(AUCavg, Model=="Discotope" | Model=="Ellipro" | Model=="Linear Regression")
+fig2b <- subset(fig2b, Boundary==""|Boundary=="24")
+fig2b <- subset(fig2b, ExcludedNSFeatures=="NScp")
+fig2b$Model <- factor(fig2b$Model, labels = c("Discotope","Ellipro","AxIEM"))
+Fig2B <- ggplot(fig2b, aes(x=Model, y=Mean, fill=Model)) +
+  geom_bar(stat="identity", color="black", position = position_dodge()) +
+  geom_errorbar(aes(ymin=Mean-StDev, ymax=Mean+StDev), width=.2, position = position_dodge(0.9)) +
+  scale_fill_manual(name="Method", values = c("#FE6100","#648FFF","gray20","gray50", "gray80")) +
+  theme_cowplot() +
+  theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank(), legend.position = "bottom", legend.justification = "center", legend.direction =    "horizontal", legend.box = "vertical") +
+  guides(shape=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6), fill="none",color="none") +
+  labs(x="Method", y="AUC") +
+  coord_cartesian(ylim = c(0.5,1))
+Fig2B
+```
+```{r}
+Fig2 <- plot_grid(Fig2A, Fig2B, nrow = 1, rel_widths = c(2,1), labels = "AUTO")
+```
+
+
+#################################
+S4 Fig 
+AUC comparisons by method and virus
+
+Leave-out test virus performance by method and upper boundary with all
+```{r}
+leaveouts <- read.csv("benchmark_leaveout_AUCs.txt", header = T, sep = " ")
+leaveouts <- subset(leaveouts, Boundary!='AxIEM')
+leaveouts <- subset(leaveouts, Virus!="")
+leaveouts$Model <- factor(leaveouts$Model, c("Discotope", "Ellipro", "LR","BC","LG","RF", "randLR","randBC","randLG","randRF"))
+leaveouts$Boundary <- factor(leaveouts$Boundary, c("Ellipro", "Discotope", "8", "16", "24","32","40","48","56","64"), labels = c("Ellipro", "Discotope", "8", "16", "24","32","40","48","56","64"))
+leaveouts$Virus <- factor(leaveouts$Virus, labels=c("EBOV","H3 stem","H7","HIV","RSV","SARS","SARS2"))
+```
+Linear Regression Models
+```{r}
+LR <- subset(leaveouts, Model=='LR' | Model=='randLR' | Model=='Discotope' | Model=='Ellipro')
+aucLR <- ggplot(LR, aes(x=Boundary, y=AUC, color=Model, Boundary)) +
+  geom_point(size=1.5) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
+  scale_fill_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) + labs(title = "Linear Regression") +
+  theme_cowplot() +
+  facet_wrap(~ Virus, nrow = 1) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6)) +
+  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8), plot.title = element_text(hjust = 0.5, size = 11), legend.position = "none", axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0.5, linetype="dashed", color="gray50") +
+  ylim(0.4, 1)
+aucLR
+```
+
+Bayes Classifier
+```{r}
+BC <- subset(leaveouts, Model=='BC' | Model=='randBC' | Model=='Discotope' | Model=='Ellipro')
+aucBC <- ggplot(BC, aes(x=Boundary, y=AUC, color=Model, Boundary)) +
+  geom_point(size=1.5) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
+  scale_fill_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) + labs(title = "Bayes Classifier") +
+  theme_cowplot() +
+  facet_wrap(~ Virus, nrow = 1) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6)) +
+  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8), plot.title = element_text(hjust = 0.5, size = 11), legend.position = "none", axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0.5, linetype="dashed", color="gray50") +
+  ylim(0.4, 1)
+aucBC
+```
+Logistic Regression Models
+```{r}
+LG <- subset(leaveouts, Model=='LG' | Model=='randLG' | Model=='Discotope' | Model=='Ellipro')
+aucLG <- ggplot(LG, aes(x=Boundary, y=AUC, color=Model, Boundary)) +
+  geom_point(size=1.5) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
+  scale_fill_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) + labs(title = "Logistic Regression") +
+  theme_cowplot() +
+  facet_wrap(~ Virus, nrow = 1) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6)) +
+  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8), plot.title = element_text(hjust = 0.5, size = 11), legend.position = "none", axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0.5, linetype="dashed", color="gray50") +
+  ylim(0.4, 1)
+aucLG
+```
+Random Forest
+```{r}
+RF <- subset(leaveouts, Model=='RF' | Model=='randRF' | Model=='Discotope' | Model=='Ellipro')
+aucRF <- ggplot(RF, aes(x=Boundary, y=AUC, color=Model, Boundary)) +
+  geom_point(size=1.5) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
+  scale_fill_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) + labs(title = "Random Forest") +
+  theme_cowplot() +
+  facet_wrap(~ Virus, nrow = 1) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6)) +
+  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8), plot.title = element_text(hjust = 0.5, size = 11), legend.position = "none", axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0.5, linetype="dashed", color="gray50") +
+  ylim(0.4, 1)
+aucRF
+```
+SFig4
+Comparison of linear regression, Bayes Classifier, and Random Forest prediction AUC values by leave-one-out tests
+```{r}
+SFig3 <- plot_grid(aucLR, aucBC, aucRF, aucLG,  ncol = 1, rel_heights = c(1,1,1,1))
+SFig3
+```
+
+Leave-out test virus performance by method and upper boundary with no NSu_cp
+```{r}
+allleaveouts <- read.csv("benchmark_all_leaveout_AUCs.txt", header = T, sep = " ")
+allleaveouts$Features <- factor(allleaveouts$Features, c("Discotope","Ellipro","allNS","noNSreu","noNScp","noNSnv","noNS"), labels = c("None","None","None","REU","CP","NV","all"))
+allleaveouts$Model <- factor(allleaveouts$Model, c("Discotope", "Ellipro", "LR","BC","LG","RF", "randLR","randBC","randLG","randRF"))
+allleaveouts$Boundary <- factor(allleaveouts$Boundary, c("Ellipro", "Discotope", "8", "16", "24","32","40","48","56","64","Per-res"))
+allleaveouts$Virus <- factor(allleaveouts$Virus, labels=c("EBOV","H3 stem","H7","HIV","RSV","SARS","SARS2"))
+```
+Linear Regression Models using all feature sets
+```{r}
+LRall <- subset(allleaveouts, Model=='LR' | Model=='randLR' | Model=='Discotope' | Model=='Ellipro' | Model=='Per-res')
+aucLRall <- ggplot(LRall, aes(x=Boundary, y=AUC, color=Model, fill=Model, shape=Features)) +
+  geom_point(size=1.5) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
+  scale_fill_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) + labs(title = "Linear Regression") +
+  scale_shape_discrete(name="Excluded NS Feature") +
+  theme_cowplot() +
+  facet_wrap(~ Virus, nrow = 1) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6)) +
+  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8,vjust = 0.5), plot.title = element_text(hjust = 0.5, size = 11), axis.title.x = element_blank(), legend.position = "bottom", legend.justification = "center", legend.direction =    "horizontal", legend.box = "vertical") +
+  guides(shape=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6), fill="none",color="none") +
+  geom_hline(yintercept = 0.5, linetype="dashed", color="gray50") +
+  ylim(0.4, 1)
+aucLRall
+```
+```{r}
+auc_legend <- get_legend(aucLRall)
+LRall <- subset(allleaveouts, Model=='LR' | Model=='randLR' | Model=='Discotope' | Model=='Ellipro' | Model=='Per-res')
+aucLRall <- ggplot(LRall, aes(x=Boundary, y=AUC, color=Model, fill=Model, shape=Features)) +
+  geom_point(size=1.5) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
+  scale_fill_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) + labs(title = "Linear Regression") +
+  scale_shape_discrete(name="Excluded NS Feature") +
+  theme_cowplot() +
+  facet_wrap(~ Virus, nrow = 1) +
+  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8,vjust = 0.5), plot.title = element_text(hjust = 0.5, size = 11), axis.title.x = element_blank(), legend.position = "none") +
+  geom_hline(yintercept = 0.5, linetype="dashed", color="gray50") +
+  ylim(0.4, 1)
+aucLRall
+```
+
+
+Bayes Classifier Models using all feature sets
+```{r}
+BCall <- subset(allleaveouts, Model=='BC' | Model=='randBC' | Model=='Discotope' | Model=='Ellipro' | Model=='Per-res')
+aucBCall <- ggplot(BCall, aes(x=Boundary, y=AUC, color=Model, fill=Model, shape=Features)) +
+  geom_point(size=1.5) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
+  scale_fill_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) + labs(title = "Bayes Classifier") +
+  scale_shape_discrete(name="Excluded NS Feature") +
+  theme_cowplot() +
+  facet_wrap(~ Virus, nrow = 1) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6)) +
+  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8,vjust = 0.5), plot.title = element_text(hjust = 0.5, size = 11), axis.title.x = element_blank(), legend.position = "none") +
+  geom_hline(yintercept = 0.5, linetype="dashed", color="gray50") +
+  ylim(0.4, 1)
+aucBCall
+```
+
+Random Forest Models using all feature sets
+```{r}
+RFall <- subset(allleaveouts, Model=='RF' | Model=='randRF' | Model=='Discotope' | Model=='Ellipro' | Model=='Per-res')
+aucRFall <- ggplot(RFall, aes(x=Boundary, y=AUC, color=Model, fill=Model, shape=Features)) +
+  geom_point(size=1.5) + scale_color_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) +
+  scale_fill_manual(name="", values = c("#FE6100","#648FFF","black","gray70")) + labs(title = "Random Forest") +
+  scale_shape_discrete(name="Excluded NS Feature") +
+  theme_cowplot() +
+  facet_wrap(~ Virus, nrow = 1) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6)) +
+  theme(panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8,vjust = 0.5), plot.title = element_text(hjust = 0.5, size = 11), axis.title.x = element_blank(), legend.position = "none") +
+  geom_hline(yintercept = 0.5, linetype="dashed", color="gray50") +
+  ylim(0.4, 1)
+aucRFall
+```
+Plot altogether
+```{r}
+SFig4 <- plot_grid(aucLRall, aucBCall, aucRFall, ncol = 1)
+SFig4 <- plot_grid(SFig4, auc_legend, ncol = 1, rel_heights = c(3,0.5))
+```
+
+
+S5 Fig Average Leave-out-performance by method
+```{r}
+AUCavg <- read.csv("benchmark_all_avgAUCs.txt", header = T, sep = "\t")
+AUCavg$Model <- factor(AUCavg$Model, c("Discotope","Ellipro","LR","BC","RF"), labels = c("Discotope","Ellipro","Linear Regression","Bayes Classifier","Random Forest"))
+AUCavg$Boundary <- factor(AUCavg$Boundary, c("Discotope","Ellipro","0","8","16","24","32","40","48","56","64"), labels = c("","","0","8","16","24","32","40","48","56","64"))
+AUCavg$ExcludedNSFeatures <- factor(AUCavg$ExcludedNSFeatures, c("none","CP","REU","NV"), labels = c("None","NScp","NSreu","NSnv"))
+AUCavgPlot <- ggplot(AUCavg, aes(x=Boundary, y=Mean, fill=Model)) +
+  geom_bar(stat="identity", color="black", position = position_dodge()) +
+  geom_errorbar(aes(ymin=Mean-StDev, ymax=Mean+StDev), width=.2, position = position_dodge(0.9)) +
+  scale_fill_manual(name="Method", values = c("#FE6100","#648FFF","gray20","gray50", "gray80")) +
+  theme_cowplot() +
+  theme(axis.title.x = element_blank(),panel.border = element_rect(color="black", size = 1),strip.background = element_rect(color = "black", size = 1), axis.text.x = element_text(angle = 90, hjust = 1,size = 8,vjust = 0.5)) +
+  facet_wrap(~ ExcludedNSFeatures) +
+  labs(x="Method", y="AUC", title="Excluded NS Feature") +
+  coord_cartesian(ylim = c(0.5,1))
+AUCavgPlot
+```
+
+```{r}
+Fig2A <- plot_grid(aucLR, auclegend, aucBC, ncol = 1, rel_heights = c(2, 0.2, 2),labels = c("A","","B"))
+Fig2 <- plot_grid(Fig2A, AUCavg, ncol = 1, rel_heights = c(2,1), labels = c("","C"))
+```
+
+#################################
+SFig 1: 
+Distributions of Epitope & non-
+epitope residues by scaled predictor
+```{r}
+feat_dists <- read.csv("AxIEM_per-residue.features", header=T, sep=" ", stringsAsFactors=FALSE)
+feat_dists$Classifier <- as.factor(feat_dists$Classifier)
+feat_dists$Classifier <- factor(feat_dists$Classifier, labels = c("Non-epitope", "Epitope"))
+epitope.values <- subset(feat_dists, Classifier == "Epitope")
+nonepitope.values <- subset(feat_dists, Classifier == "Non-epitope")
+```
+
+Rosetta per-residue total score (REU)
+```{r}
+REU.ttest <- t.test(data=feat_dists, REU ~ Classifier)
+REU.p <- REU.ttest$p.value
+maxREU <- max(feat_dists$REU)
+minREU <- min(feat_dists$REU)
+dat = data.frame(cond=factor(feat_dists[[3]]),
+                 reu=feat_dists[[5]])
+cdat <- dat %>%
+  group_by(cond) %>%
+  summarise(grp.mean = mean(reu),
+            std = sd(reu),
+            std.l = mean(reu)-std,
+            std.u = mean(reu)+std)
+
+cdat.dens.reu <- ggplot_build(ggplot(dat,aes(x=reu, color=cond)) + geom_density())$data[[1]] %>% 
+  mutate(cond=ifelse(group==1, "Non-epitope", "Epitope")) %>% 
+  left_join(cdat) %>%
+  group_by(cond) %>%
+  select(y, x, cond, grp.mean, std, std.l, std.u) %>%
+  mutate(dens.mu = approx(x,y,xout=grp.mean)[[2]],
+         dens.sdl = approx(x,y,xout=std.l)[[2]],
+         dens.sdu = approx(x,y,xout=std.u)[[2]]) %>%
+  select(-y,-x) %>%
+  slice(1)
+
+ribbon <- ggplot_build(ggplot(dat, aes(x=reu, colour=cond)) + geom_density())$data[[1]] %>%
+  mutate(cond = ifelse(group == 1, "Non-epitope", "Epitope")) %>%
+  left_join(cdat.dens.reu) %>%
+  group_by(cond) %>%
+  filter(x >= std.l & x <= std.u) %>%
+  select(cond, x, y)
+ribbon <- rbind(data.frame(cond = c("Non-epitope", "Epitope"), x = c(-4.446501
+,-3.220575), y = c(0, 0)), 
+                as.data.frame(ribbon), 
+                data.frame(cond = c("Non-epitope", "Epitope"), x = c(-0.1435165,1.0017886
+), y = c(0, 0)))
+
+
+REU <- ggplot() +
+  geom_polygon(data = ribbon, aes(x = x, y = y, fill = cond), alpha = .1) +
+  geom_density(data = dat, aes(x = reu, colour = cond)) +
+  geom_segment(data = cdat.dens.reu, aes(x = grp.mean, xend = grp.mean, y = 0, yend = dens.mu, colour = cond),
+             linetype = "dashed") +
+  geom_segment(data = cdat.dens.reu, aes(x = std.l, xend = std.l, y = 0, yend = dens.sdl, colour = cond),
+             linetype = "dotted") +
+  geom_segment(data = cdat.dens.reu, aes(x = std.u, xend = std.u, y = 0, yend = dens.sdu, colour = cond),
+               linetype = "dotted") +
+  theme_cowplot() +
+  scale_color_manual(name = "", values = c("grey10","dodgerblue")) +
+  scale_fill_manual(name = "", values = c("dodgerblue", "grey10")) +
+  theme(legend.position = "bottom", legend.justification = "center", legend.direction =    "horizontal", legend.box = "vertical") +
+  guides(color=guide_legend(nrow=1,byrow=TRUE, title.position = "top", title.hjust = 0.6), fill="none") +
+  labs(x="REU",y="Density")
+REU
+```
+```{r}
+classifier_legend <- get_legend(REU)
+REU <- ggplot() +
+  geom_polygon(data = ribbon, aes(x = x, y = y, fill = cond), alpha = .1) +
+  geom_density(data = dat, aes(x = reu, colour = cond)) +
+  geom_segment(data = cdat.dens.reu, aes(x = grp.mean, xend = grp.mean, y = 0, yend = dens.mu, colour = cond),
+             linetype = "dashed") +
+  geom_segment(data = cdat.dens.reu, aes(x = std.l, xend = std.l, y = 0, yend = dens.sdl, colour = cond),
+             linetype = "dotted") +
+  geom_segment(data = cdat.dens.reu, aes(x = std.u, xend = std.u, y = 0, yend = dens.sdu, colour = cond),
+               linetype = "dotted") +
+  theme_cowplot() +
+  scale_color_manual(name = "", values = c("grey10","dodgerblue")) +
+  scale_fill_manual(name = "", values = c("dodgerblue", "grey10")) +
+  theme(legend.position = "none") +
+  labs(x="REU",y="Density") +
+  xlim(-10,10) +
+  geom_text(label="η = 0.610\np = 1.75e-184", x = 3, y = 0.15)
+REU
+```
+```{r}
+REU.p
+```
+Shapiro-Wilk test for normality of each distribution
+```{r}
+feat_dists <- read.csv("AxIEM_per-residue.features", header=T, sep=" ", stringsAsFactors=FALSE)
+feat_dists$Classifier <- as.factor(feat_dists$Classifier)
+feat_dists$Classifier <- factor(feat_dists$Classifier, labels = c("Non-epitope", "Epitope"))
+epitope.values <- subset(feat_dists, Classifier == "Epitope")
+nonepitope.values <- subset(feat_dists, Classifier == "Non-epitope")
+```
+```{r}
+epi <- subset(feat_dists, Classifier=="Epitope")
+non <- subset(feat_dists, Classifier=="Non-epitope")
+ks.test(feat_dists$REU, y='pnorm', alternative = "two.sided")
+ks.test(feat_dists$CP, y='pnorm', alternative = "two.sided")
+ks.test(feat_dists$NV, y='pnorm', alternative = "two.sided")
+shapiro.test(epi$REU)
+shapiro.test(epi$CP)
+shapiro.test(epi$NV)
+ks.test(non$REU, y='pnorm', alternative = "two.sided")
+ks.test(non$CP, y='pnorm', alternative = "two.sided")
+ks.test(non$NV, y='pnorm', alternative = "two.sided")
+
+```
+
+per residue REU distribution-free overlap score
+```{r}
+REUdist <- list(X1=epitope.values$REU, X2=nonepitope.values$REU)
+REUov <- overlap(REUdist, n = length(epitope.values$REU))
+REUov$OV
+```
+
+Contact Proximity RMSD (CP variation)
+```{r}
+dat = data.frame(cond=factor(feat_dists[[3]]),
+                 cp=feat_dists[[6]])
+cdat <- dat %>%
+  group_by(cond) %>%
+  summarise(grp.mean = mean(cp),
+            std = sd(cp),
+            std.l = mean(cp)-std,
+            std.u = mean(cp)+std)
+cdat.dens <- ggplot_build(ggplot(dat,aes(x=cp, color=cond)) + geom_density())$data[[1]] %>% 
+  mutate(cond=ifelse(group==1, "Non-epitope", "Epitope")) %>% 
+  left_join(cdat) %>%
+  group_by(cond) %>%
+  select(y, x, cond, grp.mean, std, std.l, std.u) %>%
+  mutate(dens.mu = approx(x,y,xout=grp.mean)[[2]],
+         dens.sdl = approx(x,y,xout=std.l)[[2]],
+         dens.sdu = approx(x,y,xout=std.u)[[2]]) %>%
+  select(-y,-x) %>%
+  slice(1)
+
+ribbon <- ggplot_build(ggplot(dat, aes(x=cp, colour=cond)) + geom_density())$data[[1]] %>%
+  mutate(cond = ifelse(group == 1, "Non-epitope", "Epitope")) %>%
+  left_join(cdat.dens) %>%
+  group_by(cond) %>%
+  filter(x >= std.l & x <= std.u) %>%
+  select(cond, x, y)
+ribbon <- rbind(data.frame(cond = c("Non-epitope", "Epitope"), x = c(-0.06510550,-0.00346014), y = c(0, 0)), 
+                as.data.frame(ribbon), 
+                data.frame(cond = c("Non-epitope", "Epitope"), x = c(0.8900486, 1.0655153), y = c(0, 0)))
+
+
+CP <- ggplot() +
+  geom_polygon(data = ribbon, aes(x = x, y = y, fill = cond), alpha = .1) +
+  geom_density(data = dat, aes(x = cp, colour = cond)) +
+  geom_segment(data = cdat.dens, aes(x = grp.mean, xend = grp.mean, y = 0, yend = dens.mu, colour = cond),
+             linetype = "dashed") +
+  geom_segment(data = cdat.dens, aes(x = std.l, xend = std.l, y = 0, yend = dens.sdl, colour = cond),
+             linetype = "dotted") +
+  geom_segment(data = cdat.dens, aes(x = std.u, xend = std.u, y = 0, yend = dens.sdu, colour = cond),
+               linetype = "dotted") +
+  theme_cowplot() +
+  scale_color_manual(name = "", values = c("grey10","dodgerblue")) +
+  scale_fill_manual(name = "", values = c("dodgerblue", "grey10")) +
+  theme(legend.position = "none") +
+  labs(x="CP",y="Density") +
+  geom_text(label="η = 0.738\np = 1.12e-33", x=3,y=2)
+CP
+```
+```{r}
+CP.ttest <- t.test(data=feat_dists, CPvar ~ Classifier)
+CP.p <- CP.ttest$p.value
+CP.p
+```
+contact proximity var distribution-free overlap score
+```{r}
+CPdist <- list(X1=epitope.values$CPvar, X2=nonepitope.values$CPvar)
+CPov <- overlap(CPdist, n = length(epitope.values$CPvar))
+CPov$OV
+```
+
+Neighbor Vector (NV)
+```{r}
+dat = data.frame(cond=factor(feat_dists[[3]]),
+                 nv=feat_dists[[7]])
+cdat <- dat %>%
+  group_by(cond) %>%
+  summarise(grp.mean = mean(nv),
+            std = sd(nv),
+            std.l = mean(nv)-std,
+            std.u = mean(nv)+std)
+cdat.dens <- ggplot_build(ggplot(dat,aes(x=nv, color=cond)) + geom_density())$data[[1]] %>% 
+  mutate(cond=ifelse(group==1, "Non-epitope", "Epitope")) %>% 
+  left_join(cdat) %>%
+  group_by(cond) %>%
+  select(y, x, cond, grp.mean, std, std.l, std.u) %>%
+  mutate(dens.mu = approx(x,y,xout=grp.mean)[[2]],
+         dens.sdl = approx(x,y,xout=std.l)[[2]],
+         dens.sdu = approx(x,y,xout=std.u)[[2]]) %>%
+  select(-y,-x) %>%
+  slice(1)
+
+ribbon <- ggplot_build(ggplot(dat, aes(x=nv, colour=cond)) + geom_density())$data[[1]]  %>%
+  mutate(cond = ifelse(group == 1, "Non-epitope", "Epitope")) %>%
+  left_join(cdat.dens) %>%
+  group_by(cond) %>%
+  filter(x >= std.l & x <= std.u) %>%
+  select(cond, x, y)
+ribbon <- rbind(data.frame(cond = c("Non-epitope", "Epitope"), x = c(0.264730915, 0.289994379), y = c(0, 0)), 
+                as.data.frame(ribbon), 
+                data.frame(cond = c("Non-epitope", "Epitope"), x = c(0.475812725, 0.49767936), y = c(0, 0)))
+
+NV <- ggplot() +
+  geom_polygon(data = ribbon, aes(x = x, y = y, fill = cond), alpha = .1) +
+  geom_density(data = dat, aes(x = nv, colour = cond)) +
+  geom_segment(data = cdat.dens, aes(x = grp.mean, xend = grp.mean, y = 0, yend = dens.mu, colour = cond),
+             linetype = "dashed") +
+  geom_segment(data = cdat.dens, aes(x = std.l, xend = std.l, y = 0, yend = dens.sdl, colour = cond),
+             linetype = "dotted") +
+  geom_segment(data = cdat.dens, aes(x = std.u, xend = std.u, y = 0, yend = dens.sdu, colour = cond),
+               linetype = "dotted") +
+  theme_cowplot() +
+  scale_color_manual(name = "", values = c("grey10","dodgerblue")) +
+  scale_fill_manual(name = "", values = c("dodgerblue", "grey10")) +
+  theme(legend.position = "none") +
+  labs(x="NV",y="Density")
+NV
+
+```
+```{r}
+NV.ttest <- t.test(data=feat_dists, NV ~ Classifier)
+NV.p <- NV.ttest$p.value
+NV.p
+```
+neighbor vector distribution-free overlap score
+```{r}
+NVdist <- list(X1=epitope.values$NV, X2=nonepitope.values$NV)
+NVov <- overlap(NVdist, n = length(epitope.values$NV))
+NVov$OV
+```
+
+```{r}
+SFig1 <- plot_grid(NV, REU, CP, nrow = 1, labels = "AUTO")
+SFig1 <- plot_grid(SFig1, classifier_legend, ncol = 1, rel_heights = c(1,0.2))
+SFig1
+```
+
+#################################
+SFig2
+Comparison of NS overlap by
+upper boundary
+```{r}
+ns <- read.csv("feature_distributions.txt", header = T, sep = " ")
+ns$Classifier <- as.factor(ns$Classifier)
+ns$Classifier <- factor(ns$Classifier, labels = c("Non-epitope","Epitope"))
+NS8 <- subset(ns, Uweight=='8')
+NS16 <- subset(ns, Uweight=='16')
+NS24 <- subset(ns, Uweight=='24')
+NS32 <- subset(ns, Uweight=='32')
+NS40 <- subset(ns, Uweight=='40')
+NS48 <- subset(ns, Uweight=='48')
+NS56 <- subset(ns, Uweight=='56')
+NS64 <- subset(ns, Uweight=='64')
+NSa <- subset(ns, Uweight=='R')
+```
+-----Neighbor Sums by feature with upper radius 8
+```{r}
+mu <- NS8 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(REU))
+max8reu <- max(NS8$REU)
+min8reu <- min(NS8$REU)
+NS8reu.ttest <- t.test(data=NS8, REU ~ Classifier)
+NS8reu.p <- NS8reu.ttest$p.value
+NS8reu <- ggplot(NS8,aes(x=REU, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="REU",y="Density", title = "8 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.579\np = 2.13e-241", x = (2/4)*(max8reu/5), y = 0.75, size=3) + xlim(min8reu, max8reu/5)
+NS8reu
+```
+```{r}
+ks.test(NS8$REU, y='pnorm', alternative = "two.sided")
+```
+
+```{r}
+mu <- NS8 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(CP))
+max8cp <- max(NS8$CP)
+NS8cp.ttest <- t.test(data=NS8, CP ~ Classifier)
+NS8cp.p <- NS8cp.ttest$p.value
+NS8cp <- ggplot(NS8,aes(x=CP, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="CP",y="Density", title = "8 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.807\np = 2.20e-08", x = 3*(max8cp/4), y = 0.75, size=3)
+NS8cp
+```
+```{r}
+mu <- NS8 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NV))
+max8nv <- max(NS8$NV)
+NS8nv.ttest <- t.test(data=NS8, NV ~ Classifier)
+NS8nv.p <- NS8nv.ttest$p.value
+NS8nv <- ggplot(NS8,aes(x=NV, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NV",y="Density", title = "8 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.805\np = 2.28e-47", x = 3*(max8nv/4), y = 0.75, size=3)
+NS8nv
+```
+```{r}
+NS8reu.p
+NS8cp.p
+NS8nv.p
+```
+```{r}
+epitope.values <- subset(NS8, Classifier == "Epitope")
+nonepitope.values <- subset(NS8, Classifier == "Non-epitope")
+NS8.distributions.REU <- list(X1=epitope.values$REU, X2=nonepitope.values$REU)
+NS8.overlap.REU <- overlap(NS8.distributions.REU, n = length(epitope.values$REU))
+NS8.overlap.REU$OV
+NS8.distributions.CP <- list(X1=epitope.values$CP, X2=nonepitope.values$CP)
+NS8.overlap.CP <- overlap(NS8.distributions.CP, n = length(epitope.values$CP))
+NS8.overlap.CP$OV
+NS8.distributions.NV <- list(X1=epitope.values$NV, X2=nonepitope.values$NV)
+NS8.overlap.NV <- overlap(NS8.distributions.NV, n = length(epitope.values$NV))
+NS8.overlap.NV$OV
+```
+
+-----Neighbor Sums by feature with upper radius 16
+```{r}
+mu <- NS16 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(REU))
+max16reu <- max(NS16$REU)
+min16reu <- min(NS16$REU)
+NS16reu.ttest <- t.test(data=NS16, REU ~ Classifier)
+NS16reu.p <- NS16reu.ttest$p.value
+NS16reu <- ggplot(NS16,aes(x=REU, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="REU",y="Density", title = "16 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.532\np* = 0", x = (2/3)*(max16reu/5), y = 0.75, size=3) + xlim(min16reu, max16reu/5)
+NS16reu
+```
+
+```{r}
+mu <- NS16 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(CP))
+max16cp <- max(NS16$CP)
+NS16cp.ttest <- t.test(data=NS16, CP ~ Classifier)
+NS16cp.p <- NS16cp.ttest$p.value
+NS16cp <- ggplot(NS16,aes(x=CP, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="CP",y="Density", title = "16 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.834\np = 0.118", x = 3*(max16cp/4), y = 0.75, size=3)
+NS16cp
+```
+```{r}
+mu <- NS16 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NV))
+max16nv <- max(NS16$NV)
+NS16nv.ttest <- t.test(data=NS16, NV ~ Classifier)
+NS16nv.p <- NS8.ttest$p.value
+NS16nv <- ggplot(NS16,aes(x=NV, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NV",y="Density", title = "16 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.614\np = 2.13e-241", x = 3*(max16nv/4), y = 0.75, size=3)
+NS16nv
+```
+```{r}
+NS16reu.p
+NS16cp.p
+NS16nv.p
+```
+```{r}
+epitope.values <- subset(NS16, Classifier == "Epitope")
+nonepitope.values <- subset(NS16, Classifier == "Non-epitope")
+NS16.distributions.REU <- list(X1=epitope.values$REU, X2=nonepitope.values$REU)
+NS16.overlap.REU <- overlap(NS16.distributions.REU, n = length(epitope.values$REU))
+NS16.overlap.REU$OV
+NS16.distributions.CP <- list(X1=epitope.values$CP, X2=nonepitope.values$CP)
+NS16.overlap.CP <- overlap(NS16.distributions.CP, n = length(epitope.values$CP))
+NS16.overlap.CP$OV
+NS16.distributions.NV <- list(X1=epitope.values$NV, X2=nonepitope.values$NV)
+NS16.overlap.NV <- overlap(NS16.distributions.NV, n = length(epitope.values$NV))
+NS16.overlap.NV$OV
+```
+-----Neighbor Sums by feature with upper radius 24
+```{r}
+mu <- NS24 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(REU))
+max24reu <- max(NS24$REU)
+min24reu <- min(NS24$REU)
+NS24reu.ttest <- t.test(data=NS24, REU ~ Classifier)
+NS24reu.p <- NS24reu.ttest$p.value
+NS24reu <- ggplot(NS24,aes(x=REU, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="REU",y="Density", title = "24 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.506\np* = 0", x = (2/3)*(max24reu/5), y = 0.75, size=3) + xlim(min24reu, max24reu/5)
+NS24reu
+```
+
+```{r}
+mu <- NS24 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(CP))
+max24cp <- max(NS24$CP)
+NS24cp.ttest <- t.test(data=NS24, CP ~ Classifier)
+NS24cp.p <- NS24cp.ttest$p.value
+NS24cp <- ggplot(NS24,aes(x=CP, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="CP",y="Density", title = "24 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.842\np = 0.371", x = 3*(max24cp/4), y = 0.75, size=3)
+NS24cp
+```
+```{r}
+mu <- NS24 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NV))
+max24nv <- max(NS24$NV)
+NS24nv.ttest <- t.test(data=NS24, NV ~ Classifier)
+NS24nv.p <- NS24nv.ttest$p.value
+NS24nv <- ggplot(NS24,aes(x=NV, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NV",y="Density", title = "24 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.588\np = 1.96e-285", x = 3*(max24nv/4), y = 0.75, size=3)
+NS24nv
+```
+```{r}
+NS24reu.p
+NS24cp.p
+NS24nv.p
+```
+```{r}
+epitope.values <- subset(NS24, Classifier == "Epitope")
+nonepitope.values <- subset(NS24, Classifier == "Non-epitope")
+NS24.distributions.REU <- list(X1=epitope.values$REU, X2=nonepitope.values$REU)
+NS24.overlap.REU <- overlap(NS24.distributions.REU, n = length(epitope.values$REU))
+NS24.overlap.REU$OV
+NS24.distributions.CP <- list(X1=epitope.values$CP, X2=nonepitope.values$CP)
+NS24.overlap.CP <- overlap(NS24.distributions.CP, n = length(epitope.values$CP))
+NS24.overlap.CP$OV
+NS24.distributions.NV <- list(X1=epitope.values$NV, X2=nonepitope.values$NV)
+NS24.overlap.NV <- overlap(NS24.distributions.NV, n = length(epitope.values$NV))
+NS24.overlap.NV$OV
+```
+-----Neighbor Sums by feature with upper radius 32
+```{r}
+mu <- NS32 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(REU))
+max32reu <- max(NS32$REU)
+min32reu <- min(NS32$REU)
+NS32reu.ttest <- t.test(data=NS32, REU ~ Classifier)
+NS32reu.p <- NS32reu.ttest$p.value
+NS32reu <- ggplot(NS32,aes(x=REU, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="REU",y="Density", title = "32 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.488\np* = 0", x = (2/3)*(max32reu/5), y = 0.75, size=3) + xlim(min32reu, max32reu/5)
+NS32reu
+```
+
+```{r}
+mu <- NS32 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(CP))
+max32cp <- max(NS32$CP)
+NS32cp.ttest <- t.test(data=NS32, CP ~ Classifier)
+NS32cp.p <- NS32cp.ttest$p.value
+NS32cp <- ggplot(NS32,aes(x=CP, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="CP",y="Density", title = "32 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.856\np = 0.005", x = 3*(max32cp/4), y = 0.75, size=3)
+NS32cp
+```
+```{r}
+mu <- NS32 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NV))
+max32nv <- max(NS32$NV)
+NS32nv.ttest <- t.test(data=NS32, NV ~ Classifier)
+NS32nv.p <- NS32nv.ttest$p.value
+NS32nv <- ggplot(NS32,aes(x=NV, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NV",y="Density", title = "32 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.567\np* = 0", x = 3*(max32nv/4), y = 0.75, size=3)
+NS32nv
+```
+```{r}
+NS32reu.p
+NS32cp.p
+NS32nv.p
+```
+```{r}
+epitope.values <- subset(NS32, Classifier == "Epitope")
+nonepitope.values <- subset(NS32, Classifier == "Non-epitope")
+NS32.distributions.REU <- list(X1=epitope.values$REU, X2=nonepitope.values$REU)
+NS32.overlap.REU <- overlap(NS32.distributions.REU, n = length(epitope.values$REU))
+NS32.overlap.REU$OV
+NS32.distributions.CP <- list(X1=epitope.values$CP, X2=nonepitope.values$CP)
+NS32.overlap.CP <- overlap(NS32.distributions.CP, n = length(epitope.values$CP))
+NS32.overlap.CP$OV
+NS32.distributions.NV <- list(X1=epitope.values$NV, X2=nonepitope.values$NV)
+NS32.overlap.NV <- overlap(NS32.distributions.NV, n = length(epitope.values$NV))
+NS32.overlap.NV$OV
+```
+-----Neighbor Sums by feature with upper radius 40
+```{r}
+mu <- NS40 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(REU))
+max40reu <- max(NS40$REU)
+min40reu <- min(NS40$REU)
+NS40reu.ttest <- t.test(data=NS40, REU ~ Classifier)
+NS40reu.p <- NS40reu.ttest$p.value
+NS40reu <- ggplot(NS40,aes(x=REU, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="REU",y="Density", title = "40 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.478\np* = 0", x = (2/3)*(max40reu/5), y = 0.75, size=3) + xlim(min40reu, max40reu/5)
+NS40reu
+```
+
+```{r}
+mu <- NS40 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(CP))
+max40cp <- max(NS40$CP)
+NS40cp.ttest <- t.test(data=NS40, CP ~ Classifier)
+NS40cp.p <- NS40cp.ttest$p.value
+NS40cp <- ggplot(NS40,aes(x=CP, color=Classifier)) +
+  geom_density(aes(y=..scaled..)) +
+  labs(x="CP",y="Density", title = "40 Å radius") +
+  scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) +
+  geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) +
+  theme_cowplot() +
+  theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) +
+  guides(title.position="center") +
+  geom_text(label="η = 0.870\np = 3.35e-05", x = 3*(max40cp/4), y = 0.75, size=3)
+NS40cp
+```
+```{r}
+mu <- NS40 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NV))
+max40nv <- max(NS40$NV)
+NS40nv.ttest <- t.test(data=NS40, NV ~ Classifier)
+NS40nv.p <- NS40nv.ttest$p.value
+NS40nv <- ggplot(NS40,aes(x=NV, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NV",y="Density", title = "40 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.540\np* = 0", x = 3*(max40nv/4), y = 0.75, size=3)
+NS40nv
+```
+```{r}
+NS40reu.p
+NS40cp.p
+NS40nv.p
+```
+```{r}
+epitope.values <- subset(NS40, Classifier == "Epitope")
+nonepitope.values <- subset(NS40, Classifier == "Non-epitope")
+NS40.distributions.REU <- list(X1=epitope.values$REU, X2=nonepitope.values$REU)
+NS40.overlap.REU <- overlap(NS40.distributions.REU, n = length(epitope.values$REU))
+NS40.overlap.REU$OV
+NS40.distributions.CP <- list(X1=epitope.values$CP, X2=nonepitope.values$CP)
+NS40.overlap.CP <- overlap(NS40.distributions.CP, n = length(epitope.values$CP))
+NS40.overlap.CP$OV
+NS40.distributions.NV <- list(X1=epitope.values$NV, X2=nonepitope.values$NV)
+NS40.overlap.NV <- overlap(NS40.distributions.NV, n = length(epitope.values$NV))
+NS40.overlap.NV$OV
+```
+-----Neighbor Sums by feature with upper radius 48
+```{r}
+mu <- NS48 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(REU))
+max48reu <- max(NS48$REU)
+min48reu <- min(NS48$REU)
+NS48reu.ttest <- t.test(data=NS48, REU ~ Classifier)
+NS48reu.p <- NS48reu.ttest$p.value
+NS48reu <- ggplot(NS48,aes(x=REU, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="REU",y="Density", title = "48 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.470\np* = 0", x = (2/3)*(max48reu/5), y = 0.75, size=3) + xlim(min48reu, max48reu/5)
+NS48reu
+```
+
+```{r}
+mu <- NS48 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(CP))
+max48cp <- max(NS48$CP)
+NS48cp.ttest <- t.test(data=NS48, CP ~ Classifier)
+NS48cp.p <- NS48cp.ttest$p.value
+NS48cp <- ggplot(NS48,aes(x=CP, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="CP",y="Density", title = "48 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.873\np = 4.87e-07", x = 3*(max48cp/4), y = 0.75, size=3)
+NS48cp
+```
+```{r}
+mu <- NS48 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NV))
+max48nv <- max(NS48$NV)
+NS48nv.ttest <- t.test(data=NS48, NV ~ Classifier)
+NS48nv.p <- NS48nv.ttest$p.value
+NS48nv <- ggplot(NS48,aes(x=NV, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NV",y="Density", title = "48 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.525\np* = 0", x = 3*(max48nv/4), y = 0.75,size=3)
+NS48nv
+```
+```{r}
+NS48reu.p
+NS48cp.p
+NS48nv.p
+```
+```{r}
+epitope.values <- subset(NS48, Classifier == "Epitope")
+nonepitope.values <- subset(NS48, Classifier == "Non-epitope")
+NS48.distributions.REU <- list(X1=epitope.values$REU, X2=nonepitope.values$REU)
+NS48.overlap.REU <- overlap(NS48.distributions.REU, n = length(epitope.values$REU))
+NS48.overlap.REU$OV
+NS48.distributions.CP <- list(X1=epitope.values$CP, X2=nonepitope.values$CP)
+NS48.overlap.CP <- overlap(NS48.distributions.CP, n = length(epitope.values$CP))
+NS48.overlap.CP$OV
+NS48.distributions.NV <- list(X1=epitope.values$NV, X2=nonepitope.values$NV)
+NS48.overlap.NV <- overlap(NS48.distributions.NV, n = length(epitope.values$NV))
+NS48.overlap.NV$OV
+```
+-----Neighbor Sums by feature with upper radius 56
+```{r}
+mu <- NS56 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(REU))
+max56reu <- max(NS56$REU)
+min56reu <- min(NS56$REU)
+NS56reu.ttest <- t.test(data=NS56, REU ~ Classifier)
+NS56reu.p <- NS56reu.ttest$p.value
+NS56reu <- ggplot(NS56,aes(x=REU, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="REU",y="Density", title = "56 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.464\np* = 0", x = (2/3)*(max56reu/5), y = 0.75,size=3) + xlim(min56reu, max56reu/5)
+NS56reu
+```
+
+```{r}
+mu <- NS56 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(CP))
+max56cp <- max(NS56$CP)
+NS56cp.ttest <- t.test(data=NS56, CP ~ Classifier)
+NS56cp.p <- NS56cp.ttest$p.value
+NS56cp <- ggplot(NS56,aes(x=CP, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="CP",y="Density", title = "56 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.870\np = 2.47e-08", x = 3*(max56cp/4), y = 0.75, size=3)
+NS56cp
+```
+```{r}
+mu <- NS56 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NV))
+max56nv <- max(NS56$NV)
+NS56nv.ttest <- t.test(data=NS56, NV ~ Classifier)
+NS56nv.p <- NS56nv.ttest$p.value
+NS56nv <- ggplot(NS56,aes(x=NV, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NV",y="Density", title = "56 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.516\np* = 0", x = 3*(max56nv/4), y = 0.75, size=3)
+NS56nv
+```
+```{r}
+NS56reu.p
+NS56cp.p
+NS56nv.p
+```
+```{r}
+epitope.values <- subset(NS56, Classifier == "Epitope")
+nonepitope.values <- subset(NS56, Classifier == "Non-epitope")
+NS56.distributions.REU <- list(X1=epitope.values$REU, X2=nonepitope.values$REU)
+NS56.overlap.REU <- overlap(NS56.distributions.REU, n = length(epitope.values$REU))
+NS56.overlap.REU$OV
+NS56.distributions.CP <- list(X1=epitope.values$CP, X2=nonepitope.values$CP)
+NS56.overlap.CP <- overlap(NS56.distributions.CP, n = length(epitope.values$CP))
+NS56.overlap.CP$OV
+NS56.distributions.NV <- list(X1=epitope.values$NV, X2=nonepitope.values$NV)
+NS56.overlap.NV <- overlap(NS56.distributions.NV, n = length(epitope.values$NV))
+NS56.overlap.NV$OV
+```
+-----Neighbor Sums by feature with upper radius 64
+```{r}
+mu <- NS64 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(REU))
+max64reu <- max(NS64$REU)
+min64reu <- min(NS64$REU)
+NS64reu.ttest <- t.test(data=NS64, REU ~ Classifier)
+NS64reu.p <- NS64reu.ttest$p.value
+NS64reu <- ggplot(NS64,aes(x=REU, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="REU",y="Density", title = "64 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.462\np* = 0", x = (2/3)*(max32reu/5), y = 0.75, size=3) + xlim(min64reu, max64reu/5)
+NS64reu
+```
+-experimental - rm outliers
+```{r}
+mu <- NS64 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(REU))
+max64reu <- max(NS64$REU)
+min64reu <- min(NS64$REU)
+NS64reu.ttest <- t.test(data=NS64, REU ~ Classifier)
+NS64reu.p <- NS64reu.ttest$p.value
+NS64reu <- ggplot(NS64,aes(x=REU, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="REU",y="Density", title = "64 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.462\np* = 0", x = (2/3)*(max64reu/5), y = 0.75, size=3) + xlim(min64reu, max64reu/5)
+NS64reu
+```
+```{r}
+mu <- NS64 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(CP))
+max64cp <- max(NS64$CP)
+NS64cp.ttest <- t.test(data=NS64, CP ~ Classifier)
+NS64cp.p <- NS64cp.ttest$p.value
+NS64cp <- ggplot(NS64,aes(x=CP, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="CP",y="Density", title = "64 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.868\np = 4.89e-09", x = 3*(max64cp/4), y = 0.75, size=3)
+NS64cp
+```
+```{r}
+mu <- NS64 %>%
+  group_by(Classifier) %>%
+  summarise(grp.mean = mean(NV))
+max64nv <- max(NS64$NV)
+NS64nv.ttest <- t.test(data=NS64, NV ~ Classifier)
+NS64nv.p <- NS64nv.ttest$p.value
+NS64nv <- ggplot(NS64,aes(x=NV, color=Classifier)) + geom_density(aes(y=..scaled..)) + labs(x="NV",y="Density", title = "64 Å radius") + scale_color_manual(name = "Epitope Classification", values = c("grey10", "dodgerblue")) + geom_vline(aes(xintercept = grp.mean, color=Classifier), data = mu, linetype = 2) + theme_cowplot() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 11), axis.text.x = element_blank(), axis.ticks = element_blank()) + guides(title.position="center") + geom_text(label="η = 0.511\np* = 0", x = 3*(max64nv/4), y = 0.75, size=3)
+NS64nv
+```
+```{r}
+NS64reu.p
+NS64cp.p
+NS64nv.p
+```
+```{r}
+epitope.values <- subset(NS64, Classifier == "Epitope")
+nonepitope.values <- subset(NS64, Classifier == "Non-epitope")
+NS64.distributions.REU <- list(X1=epitope.values$REU, X2=nonepitope.values$REU)
+NS64.overlap.REU <- overlap(NS64.distributions.REU, n = length(epitope.values$REU))
+NS64.overlap.REU$OV
+NS64.distributions.CP <- list(X1=epitope.values$CP, X2=nonepitope.values$CP)
+NS64.overlap.CP <- overlap(NS64.distributions.CP, n = length(epitope.values$CP))
+NS64.overlap.CP$OV
+NS64.distributions.NV <- list(X1=epitope.values$NV, X2=nonepitope.values$NV)
+NS64.overlap.NV <- overlap(NS64.distributions.NV, n = length(epitope.values$NV))
+NS64.overlap.NV$OV
+```
+
+```{r}
+SFig2 <- plot_grid(NS8reu,NS8cp,NS8nv,NS16reu,NS16cp,NS16nv,NS24reu,NS24cp,NS24nv,NS32reu,NS32cp,NS32nv, nrow = 4)
+SFig2 <- plot_grid(SFig2, classifier_legend, ncol = 1, rel_heights = c(4,0.3))
+SFig2
+```
+```{r}
+SFig3 <- plot_grid(NS40reu,NS40cp,NS40nv,NS48reu,NS48cp,NS48nv,NS56reu,NS56cp,NS56nv,NS64reu,NS64cp,NS64nv, nrow = 4)
+SFig3 <- plot_grid(SFig3, classifier_legend, ncol = 1, rel_heights = c(4,0.3))
+SFig3
+```
+
+
+
+
+
+
+
+
